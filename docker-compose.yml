@@ -1,40 +1,36 @@
 version: '3.8'
 
 services:
-  # Dịch vụ Database
   postgres-db:
     image: postgres:15-alpine
     container_name: nest-postgres
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123456
-      POSTGRES_DB: ecommerce_db
+      # Docker sẽ lấy giá trị từ file .env dán vào đây
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      - '5432:5432'
+      - '${DB_PORT}:5432' # Map cổng từ .env vào cổng 5432 của container
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - nest-network
 
-  # Dịch vụ Caching
   redis-cache:
     image: redis:7-alpine
     container_name: nest-redis
     restart: always
     ports:
-      - '6379:6379'
-    volumes:
-      - redis_data:/data
+      - '${REDIS_PORT}:6379'
+    # Nếu muốn đặt pass cho redis:
+    # command: redis-server --requirepass ${REDIS_PASSWORD}
     networks:
       - nest-network
 
-# Khai báo Volumes để lưu trữ dữ liệu bền vững
 volumes:
   postgres_data:
-  redis_data:
 
-# Khai báo Network để các container có thể giao tiếp với nhau
 networks:
   nest-network:
     driver: bridge
