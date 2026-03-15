@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  # Dịch vụ Database
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: nest-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: ecommerce_db
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nest-network
+
+  # Dịch vụ Caching
+  redis-cache:
+    image: redis:7-alpine
+    container_name: nest-redis
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - nest-network
+
+# Khai báo Volumes để lưu trữ dữ liệu bền vững
+volumes:
+  postgres_data:
+  redis_data:
+
+# Khai báo Network để các container có thể giao tiếp với nhau
+networks:
+  nest-network:
+    driver: bridge
