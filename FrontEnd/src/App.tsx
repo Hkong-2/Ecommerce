@@ -1,28 +1,51 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuthStore } from './stores/useAuthStore';
+import { LoginPage } from './pages/LoginPage';
+import { HomePage } from './pages/HomePage';
+import { AdminPage } from './pages/AdminPage';
+
+const ProtectedRoute = ({ children, allowedRoles }: { children: React.ReactElement, allowedRoles?: ('USER' | 'ADMIN')[] }) => {
+  const { isAuthenticated, user } = useAuthStore();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && user && !allowedRoles.includes(user.role as 'USER' | 'ADMIN')) {
+    // If user is authenticated but not authorized, redirect to home
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      
-      <h1 className='text-3xl font-bold underline text-red-500'>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <HomePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/*"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminPage />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
