@@ -29,11 +29,8 @@ export class AuthController {
     // req.user được Inject từ hàm validate() bên GoogleStrategy
     const loginResult = this.authService.login(req.user);
 
-    // TODO: Nên redirect người dùng tới Frontend URI, kèm theo JWT ở param hay cookie
-    // VD: res.redirect(`http://localhost:3000/login?token=${loginResult.access_token}`);
-
-    // Nếu chỉ là Test API:
-    return res.json(loginResult);
+    // Redirect người dùng tới Frontend URI, kèm theo JWT ở param
+    return res.redirect(`http://localhost:5173/login?token=${loginResult.access_token}`);
   }
 
   /**
