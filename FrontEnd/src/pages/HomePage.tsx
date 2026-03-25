@@ -30,7 +30,7 @@ export const HomePage: React.FC = () => {
     <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans p-8">
       <div className="max-w-4xl mx-auto space-y-8">
         <header className="flex justify-between items-center py-6 border-b border-zinc-200">
-          <h1 className="text-4xl font-black uppercase tracking-tighter text-indigo-600">Shoora.</h1>
+          <h1 className="text-4xl font-black uppercase tracking-tighter text-indigo-600">Shoora</h1>
           {isAuthenticated ? (
              <div className="flex items-center space-x-6">
                <div className="flex flex-col items-end">
