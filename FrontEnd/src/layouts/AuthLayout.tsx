@@ -14,14 +14,14 @@ export const AuthLayout: React.FC<{ children: React.ReactNode }> = ({ children }
 
         <div className="relative z-10 space-y-6 text-center">
           <h1 className="text-6xl font-black tracking-tighter uppercase mb-4 drop-shadow-lg">
-            Shoora.
+            Shoora
           </h1>
           <p className="text-xl font-light tracking-wide max-w-md mx-auto leading-relaxed">
-            Step into the future. Discover exclusive sneakers and elevate your street style.
+            Step into the future. Discover exclusive shoes and elevate your style.
           </p>
 
           {/* Abstract Shoe Graphic placeholder (could be an image later) */}
-          <div className="mt-12 mx-auto w-64 h-64 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center animate-bounce duration-500">
+          <div className="mt-12 mx-auto w-50 h-50 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center animate-bounce duration-500">
              <span className="text-5xl">👟</span>
           </div>
         </div>
