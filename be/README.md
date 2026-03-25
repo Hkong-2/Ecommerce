@@ -1,98 +1,205 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Ecommerce Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend cho dự án Ecommerce, xây dựng bằng NestJS, Prisma và PostgreSQL.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Công nghệ sử dụng
 
-## Description
+- NestJS
+- Prisma 7
+- PostgreSQL
+- Passport
+- JWT
+- Google OAuth 2.0
+- Swagger
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Chức năng hiện có
 
-## Project setup
+- Kết nối PostgreSQL bằng Prisma
+- Đăng nhập bằng Google OAuth
+- Sinh JWT sau khi đăng nhập thành công
+- Xác thực route bằng Bearer Token
+- Tài liệu API với Swagger
 
-```bash
-$ npm install
+## Cấu trúc thư mục
+
+```text
+src/
+  app.module.ts
+  main.ts
+  auth/
+    auth.controller.ts
+    auth.module.ts
+    auth.service.ts
+    google.strategy.ts
+    jwt.strategy.ts
+    roles/
+      roles.decorator.ts
+      roles.guard.ts
+  prisma/
+    prisma.module.ts
+    prisma.service.ts
+
+prisma/
+  schema.prisma
+  migrations/
+
+prisma.config.ts
 ```
 
-## Compile and run the project
+## Yêu cầu môi trường
 
-```bash
-# development
-$ npm run start
+- Node.js 20+
+- PostgreSQL
+- npm
 
-# watch mode
-$ npm run start:dev
+## Biến môi trường
 
-# production mode
-$ npm run start:prod
+Tạo file `.env` trong thư mục `be`:
+
+```env
+PORT=3000
+
+DATABASE_URL=postgresql://postgres:123456@localhost:5432/ecommerce_db?schema=public
+
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:3000/auth/google/callback
+
+JWT_SECRET=your_jwt_secret
 ```
 
-## Run tests
+## Cài đặt
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Nếu PowerShell chặn script, dùng:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+cmd /c npm install
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## Prisma 7
 
-## Resources
+Project này đang dùng Prisma 7, nên:
 
-Check out a few resources that may come in handy when working with NestJS:
+- Không khai báo `url` trong `prisma/schema.prisma`
+- Connection string được lấy từ `prisma.config.ts`
+- `PrismaClient` phải khởi tạo với adapter trong `PrismaService`
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Nếu thay đổi schema, chạy:
 
-## Support
+```bash
+cmd /c npx prisma generate
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Khi cần tạo migration:
 
-## Stay in touch
+```bash
+cmd /c npx prisma migrate dev
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+## Chạy project
 
-## License
+```bash
+npm run start:dev
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Hoặc:
+
+```bash
+cmd /c npm run start:dev
+```
+
+Mặc định server chạy tại:
+
+```text
+http://localhost:3000
+```
+
+## Swagger
+
+Swagger UI:
+
+```text
+http://localhost:3000/api/docs
+```
+
+## Authentication flow
+
+### 1. Đăng nhập Google
+
+```http
+GET /auth/google
+```
+
+Route này chuyển hướng người dùng tới trang đăng nhập Google.
+
+### 2. Google callback
+
+```http
+GET /auth/google/callback
+```
+
+Sau khi Google xác thực thành công:
+
+- Backend kiểm tra user theo email
+- Nếu chưa có thì tạo user mới
+- Sinh `access_token`
+- Trả về JSON chứa token
+
+Ví dụ response:
+
+```json
+{
+  "access_token": "your_jwt_token"
+}
+```
+
+### 3. Lấy profile
+
+```http
+GET /auth/profile
+Authorization: Bearer <access_token>
+```
+
+Ví dụ response:
+
+```json
+{
+  "userId": 1,
+  "role": "USER"
+}
+```
+
+## Scripts
+
+```bash
+npm run build
+npm run start
+npm run start:dev
+npm run start:debug
+npm run start:prod
+npm run test
+npm run test:watch
+npm run test:cov
+npm run test:e2e
+```
+
+## Ghi chú
+
+- Hiện tại backend mới tập trung phần auth và kết nối database
+- Google login đang trả token dạng JSON ở callback
+- Sau này có thể đổi sang redirect về frontend và gửi token qua cookie hoặc query params
+- Trong schema hiện có các model chính như `User`, `Address`, `Category`, `Product`, `SKU`, `CartItem`, `Order`, `OrderItem`
+
+## Hướng phát triển tiếp theo
+
+- Hoàn thiện module sản phẩm
+- Hoàn thiện giỏ hàng
+- Hoàn thiện đơn hàng
+- Thêm phân quyền admin
+- Thêm validate DTO
+- Thêm refresh token
+- Thêm logging và exception filter
