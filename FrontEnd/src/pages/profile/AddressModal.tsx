@@ -1,8 +1,8 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAddAddress, useUpdateAddress } from '@/hooks/useAddress';
-import { type Address } from '@/hooks/useProfile';
+import { useAddAddress, useUpdateAddress } from '../../hooks/useAddress';
+import { type Address } from '../../hooks/useProfile';
 import {
   Form,
   FormControl,
@@ -10,13 +10,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+} from '../../components/ui/form';
+import { Input } from '../../components/ui/input';
+import { Button } from '../../components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../../components/ui/dialog';
 import { useDispatch, useSelector } from 'react-redux';
-import { type RootState, type AppDispatch } from '@/stores/store';
-import { closeAddressModal } from '@/stores/uiSlice';
+import { type RootState, type AppDispatch } from '../../stores/store';
+import { closeAddressModal } from '../../stores/uiSlice';
 import { toast } from 'sonner';
 import { useEffect } from 'react';
 

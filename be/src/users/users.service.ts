@@ -34,8 +34,8 @@ export class UsersService {
     const user = await this.prisma.user.update({
       where: { id },
       data: {
-        ...(fullName && { fullName }),
-        ...(phone && { phone }),
+        ...(fullName !== undefined && { fullName }),
+        ...(phone !== undefined && { phone }),
       },
       include: {
         addresses: {

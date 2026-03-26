@@ -1,11 +1,9 @@
 import React, { useEffect } from 'react';
 import { useAuthStore } from '../stores/authStore';
-import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api/auth';
 
 export const HomePage: React.FC = () => {
-  const { user, isAuthenticated, logout, setUser, isLoading } = useAuthStore();
-  const navigate = useNavigate();
+  const { user, isAuthenticated, setUser, isLoading } = useAuthStore();
 
   useEffect(() => {
      // If authenticated but user profile is missing, try fetching it.
@@ -29,30 +27,7 @@ export const HomePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900 font-sans p-8">
       <div className="max-w-4xl mx-auto space-y-8">
-        <header className="flex justify-between items-center py-6 border-b border-zinc-200">
-          <h1 className="text-4xl font-black uppercase tracking-tighter text-indigo-600">Shoora</h1>
-          {isAuthenticated ? (
-             <div className="flex items-center space-x-6">
-               <div className="flex flex-col items-end">
-                  <span className="font-semibold text-lg">{user?.fullName || 'Sneakerhead'}</span>
-                  <span className="text-xs text-zinc-500 uppercase tracking-wider">{user?.role || 'USER'}</span>
-               </div>
-               <button
-                 onClick={() => { logout(); navigate('/login'); }}
-                 className="px-6 py-2 rounded-full border border-zinc-300 hover:border-red-500 hover:text-red-500 transition-colors font-medium"
-               >
-                 Logout
-               </button>
-             </div>
-          ) : (
-            <button
-              onClick={() => navigate('/login')}
-              className="px-8 py-3 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/30"
-            >
-              Sign In
-            </button>
-          )}
-        </header>
+        {/* Header removed as it is now in MainLayout */}
 
         <main className="py-12 space-y-12">
            <section className="text-center space-y-6">

@@ -1,9 +1,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
-import { useProfile } from '@/hooks/useProfile';
-import { useDeleteAddress } from '@/hooks/useAddress';
+import { useProfile } from '../../hooks/useProfile';
+import { useDeleteAddress } from '../../hooks/useAddress';
 import { useDispatch } from 'react-redux';
-import { type AppDispatch } from '@/stores/store';
-import { openAddressModal } from '@/stores/uiSlice';
+import { type AppDispatch } from '../../stores/store';
+import { openAddressModal } from '../../stores/uiSlice';
 import { Button } from '../../components/ui/button';
 import { ProfileForm } from './ProfileForm';
 import { AddressModal } from './AddressModal';
