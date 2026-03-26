@@ -34,7 +34,6 @@ export default function ProfilePage() {
               <p><span className="font-medium">Email:</span> {profile.email}</p>
               <p><span className="font-medium">Full Name:</span> {profile.fullName}</p>
               <p><span className="font-medium">Phone:</span> {profile.phone || 'Not provided'}</p>
-              <p><span className="font-medium">Role:</span> {profile.role}</p>
             </div>
             <ProfileForm initialData={{ fullName: profile.fullName, phone: profile.phone }} />
           </div>

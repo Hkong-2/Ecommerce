@@ -38,7 +38,7 @@ export function Header() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="text-xl font-bold tracking-tight text-blue-600">
-          ShopApp
+          SHOORA
         </Link>
 
         {/* Search Bar - Placeholder */}
