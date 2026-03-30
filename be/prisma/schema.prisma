@@ -7,7 +7,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-
 datasource db {
   provider = "postgresql"
 }
@@ -17,14 +16,14 @@ datasource db {
 // ==========================================
 
 model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
   password  String
   fullName  String
   phone     String?
-  role      Role      @default(USER)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   addresses Address[]
   orders    Order[]
@@ -39,75 +38,89 @@ enum Role {
 model Address {
   id            Int     @id @default(autoincrement())
   userId        Int
-  receiverName  String  // Tên người nhận (có thể khác tên user)
-  receiverPhone String  // SĐT người nhận
-  street        String  // Số nhà, tên đường
-  ward          String  // Phường/Xã
-  district      String  // Quận/Huyện
-  city          String  // Tỉnh/Thành phố
+  receiverName  String // Tên người nhận (có thể khác tên user)
+  receiverPhone String // SĐT người nhận
+  street        String // Số nhà, tên đường
+  ward          String // Phường/Xã
+  district      String // Quận/Huyện
+  city          String // Tỉnh/Thành phố
   isDefault     Boolean @default(false)
 
-  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders        Order[]
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
 }
 
 // ==========================================
 // 2. QUẢN LÝ SẢN PHẨM & BIẾN THỂ (PHỤ KIỆN MÁY TÍNH)
 // ==========================================
 
+model Brand {
+  id          Int       @id @default(autoincrement())
+  name        String // VD: Akko, Logitech, Razer
+  slug        String    @unique
+  description String?   @db.Text
+  logoUrl     String?
+  products    Product[]
+}
+
 model Category {
   id          Int       @id @default(autoincrement())
-  name        String    // VD: Bàn phím cơ, Chuột gaming, Tai nghe
+  name        String // VD: Bàn phím cơ, Chuột gaming, Tai nghe
   slug        String    @unique
   description String?
   products    Product[]
 }
 
 model Product {
-  id           Int       @id @default(autoincrement())
+  id           Int     @id @default(autoincrement())
   categoryId   Int
-  name         String    // VD: Bàn phím cơ Akko 3098B
-  slug         String    @unique
-  description  String    @db.Text
-  brand        String    // VD: Akko, Logitech, Razer [cite: 5]
-  thumbnailUrl String?   // Link ảnh đại diện (rất cần khi crawl)
-  
+  brandId      Int
+  name         String // VD: Bàn phím cơ Akko 3098B
+  slug         String  @unique
+  description  String  @db.Text
+  thumbnailUrl String? // Link ảnh đại diện (rất cần khi crawl)
+  sourceUrl    String? // URL gốc của trang crawl dữ liệu
+
   // Lưu toàn bộ thông số kỹ thuật linh hoạt cào được từ web
   // VD: { "layout": "98 keys", "connection": "Wireless/Bluetooth/Type-C", "led": "RGB" }
-  techSpecs    Json?     
+  techSpecs Json?
 
-  isActive     Boolean   @default(true)
-  createdAt    DateTime  @default(now())
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
 
-  category     Category       @relation(fields: [categoryId], references: [id])
-  skus         SKU[]
-  images       ProductImage[] // Thư viện ảnh sản phẩm
+  category Category       @relation(fields: [categoryId], references: [id])
+  brand    Brand          @relation(fields: [brandId], references: [id])
+  skus     SKU[]
+  images   ProductImage[] // Thư viện ảnh sản phẩm
 }
 
 model ProductImage {
-  id        Int      @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   productId Int
-  imageUrl  String   // URL ảnh crawl được
-  altText   String?  // Text mô tả ảnh (SEO)
-  
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  skuId     Int? // Hỗ trợ ảnh theo màu sắc/switch (optional)
+  imageUrl  String // URL ảnh crawl được
+  altText   String? // Text mô tả ảnh (SEO)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku     SKU?    @relation(fields: [skuId], references: [id], onDelete: SetNull)
 }
 
 model SKU {
-  id            Int       @id @default(autoincrement())
+  id            Int    @id @default(autoincrement())
   productId     Int
-  skuCode       String    @unique // VD: AKKO-3098B-BLUE-RED (Hãng-Mẫu-Màu-Switch)
-  originalPrice Float?    // Giá gốc (giá gạch chéo)
-  price         Float     // Giá bán hiện tại 
-  stock         Int       // Số lượng tồn kho 
-  
+  skuCode       String @unique // VD: AKKO-3098B-BLUE-RED (Hãng-Mẫu-Màu-Switch)
+  originalPrice Float? // Giá gốc (giá gạch chéo)
+  price         Float // Giá bán hiện tại
+  stock         Int // Số lượng tồn kho
+
   // Lưu các biến thể linh hoạt bằng JSONB của PostgreSQL 
   // VD: { "color": "Blue on White", "switch": "Akko CS Jelly Red" }
-  attributes    Json      
+  attributes Json
 
-  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
-  cartItems     CartItem[]
-  orderItems    OrderItem[]
+  product    Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  images     ProductImage[] // Thêm relation để liên kết ngược từ ProductImage
+  cartItems  CartItem[]
+  orderItems OrderItem[]
 }
 
 // ==========================================
@@ -115,75 +128,77 @@ model SKU {
 // ==========================================
 
 model CartItem {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  skuId     Int      // Liên kết trực tiếp tới biến thể cụ thể khách chọn [cite: 7, 8]
-  quantity  Int      @default(1)
-  addedAt   DateTime @default(now())
+  id       Int      @id @default(autoincrement())
+  userId   Int
+  skuId    Int // Liên kết trực tiếp tới biến thể cụ thể khách chọn [cite: 7, 8]
+  quantity Int      @default(1)
+  addedAt  DateTime @default(now())
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sku       SKU      @relation(fields: [skuId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sku  SKU  @relation(fields: [skuId], references: [id], onDelete: Cascade)
 
   @@unique([userId, skuId]) // Tránh trùng lặp biến thể trong giỏ hàng [cite: 8]
 }
+
 // ==========================================
 // 4. ĐƠN HÀNG & BẢO TOÀN LỊCH SỬ
 // ==========================================
 
 model Order {
-  id               Int      @id @default(autoincrement())
-  userId           Int
-  addressId        Int
-  orderCode        String   @unique // Mã đơn hàng ngắn gọn cho khách dễ tra cứu (VD: ORD-20260317-XYZ)
-  
-  status           OrderStatus @default(PENDING)
-  paymentMethod    String      // VD: COD, VNPAY, STRIPE
-  paymentStatus    String      @default("UNPAID") // UNPAID, PAID, REFUNDED
-  
-  shippingFee      Float       @default(0) // Phí ship tính riêng
-  totalAmount      Float       // Tổng tiền khách phải trả cuối cùng
-  note             String?     @db.Text
-  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id        Int    @id @default(autoincrement())
+  userId    Int
+  addressId Int
+  orderCode String @unique // Mã đơn hàng ngắn gọn cho khách dễ tra cứu (VD: ORD-20260317-XYZ)
 
-  user             User                 @relation(fields: [userId], references: [id])
-  address          Address              @relation(fields: [addressId], references: [id])
-  items            OrderItem[]
-  statusHistory    OrderStatusHistory[]
+  status        OrderStatus @default(PENDING)
+  paymentMethod String // VD: COD, VNPAY, STRIPE
+  paymentStatus String      @default("UNPAID") // UNPAID, PAID, REFUNDED
+
+  shippingFee Float   @default(0) // Phí ship tính riêng
+  totalAmount Float // Tổng tiền khách phải trả cuối cùng
+  note        String? @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user          User                 @relation(fields: [userId], references: [id])
+  address       Address              @relation(fields: [addressId], references: [id])
+  items         OrderItem[]
+  statusHistory OrderStatusHistory[]
 }
 
 enum OrderStatus {
-  PENDING     // Chờ xác nhận
-  PROCESSING  // Đang đóng gói
-  SHIPPING    // Đang giao hàng
-  COMPLETED   // Đã giao thành công
-  CANCELLED   // Đã hủy
+  PENDING // Chờ xác nhận
+  PROCESSING // Đang đóng gói
+  SHIPPING // Đang giao hàng
+  COMPLETED // Đã giao thành công
+  CANCELLED // Đã hủy
 }
 
 model OrderItem {
-  id                  Int    @id @default(autoincrement())
-  orderId             Int
-  skuId               Int?   // Để optional, đề phòng sau này lỡ xóa SKU thì đơn hàng cũ không bị lỗi
-  quantity            Int
+  id       Int  @id @default(autoincrement())
+  orderId  Int
+  skuId    Int? // Để optional, đề phòng sau này lỡ xóa SKU thì đơn hàng cũ không bị lỗi
+  quantity Int
 
   // --- DATA SNAPSHOT (LƯU CHẾT THÔNG TIN LÚC MUA) ---
-  productNameSnapshot String // Lưu cứng tên "Nike Air Force 1 '07 - Trắng - Size 42"
-  unitPrice           Float  // Giá gốc 1 đôi lúc mua (VD: 2.500.000)
-  discountAmount      Float  @default(0) // Mức giảm giá 1 đôi lúc mua (VD: 500.000)
-  finalPrice          Float  // Giá thực tế thanh toán cho 1 đôi (VD: 2.000.000)
-  
-  order               Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  sku                 SKU?   @relation(fields: [skuId], references: [id], onDelete: SetNull)
+  productNameSnapshot   String // Lưu cứng tên sản phẩm lúc mua
+  skuAttributesSnapshot Json? // Lưu cứng thông tin biến thể (màu sắc, switch...) khách đã chọn
+  unitPrice             Float // Giá gốc 1 SP lúc mua (VD: 2.500.000)
+  discountAmount        Float  @default(0) // Mức giảm giá 1 SP lúc mua (VD: 500.000)
+  finalPrice            Float // Giá thực tế thanh toán cho 1 SP (VD: 2.000.000)
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  sku   SKU?  @relation(fields: [skuId], references: [id], onDelete: SetNull)
 }
 
 model OrderStatusHistory {
   id        Int         @id @default(autoincrement())
   orderId   Int
   status    OrderStatus
-  note      String?     // Ghi chú thêm (VD: "Khách hẹn giao lại vào ngày mai")
-  createdBy Int?        // ID của nhân viên cập nhật trạng thái (nếu có)
+  note      String? // Ghi chú thêm (VD: "Khách hẹn giao lại vào ngày mai")
+  createdBy Int? // ID của nhân viên cập nhật trạng thái (nếu có)
   createdAt DateTime    @default(now())
 
-  order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
