@@ -52,46 +52,62 @@ model Address {
 }
 
 // ==========================================
-// 2. QUẢN LÝ SẢN PHẨM & BIẾN THỂ (GIÀY)
+// 2. QUẢN LÝ SẢN PHẨM & BIẾN THỂ (PHỤ KIỆN MÁY TÍNH)
 // ==========================================
 
 model Category {
   id          Int       @id @default(autoincrement())
-  name        String    // VD: Sneakers, Giày chạy bộ, Giày da
+  name        String    // VD: Bàn phím cơ, Chuột gaming, Tai nghe
   slug        String    @unique
   description String?
-  
   products    Product[]
 }
 
 model Product {
-  id          Int       @id @default(autoincrement())
-  categoryId  Int
-  name        String    // VD: Nike Air Force 1 '07
-  slug        String    @unique
-  description String    @db.Text
-  brand       String    // VD: Nike, Adidas, Vans
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
+  id           Int       @id @default(autoincrement())
+  categoryId   Int
+  name         String    // VD: Bàn phím cơ Akko 3098B
+  slug         String    @unique
+  description  String    @db.Text
+  brand        String    // VD: Akko, Logitech, Razer [cite: 5]
+  thumbnailUrl String?   // Link ảnh đại diện (rất cần khi crawl)
+  
+  // Lưu toàn bộ thông số kỹ thuật linh hoạt cào được từ web
+  // VD: { "layout": "98 keys", "connection": "Wireless/Bluetooth/Type-C", "led": "RGB" }
+  techSpecs    Json?     
 
-  category    Category  @relation(fields: [categoryId], references: [id])
-  skus        SKU[]
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+
+  category     Category       @relation(fields: [categoryId], references: [id])
+  skus         SKU[]
+  images       ProductImage[] // Thư viện ảnh sản phẩm
+}
+
+model ProductImage {
+  id        Int      @id @default(autoincrement())
+  productId Int
+  imageUrl  String   // URL ảnh crawl được
+  altText   String?  // Text mô tả ảnh (SEO)
+  
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
 
 model SKU {
-  id          Int       @id @default(autoincrement())
-  productId   Int
-  skuCode     String    @unique // VD: NK-AF1-WHT-42 (Hãng-Mẫu-Màu-Size)
-  price       Float     // Giá bán hiện tại
-  stock       Int       // Số lượng tồn kho
+  id            Int       @id @default(autoincrement())
+  productId     Int
+  skuCode       String    @unique // VD: AKKO-3098B-BLUE-RED (Hãng-Mẫu-Màu-Switch)
+  originalPrice Float?    // Giá gốc (giá gạch chéo)
+  price         Float     // Giá bán hiện tại 
+  stock         Int       // Số lượng tồn kho 
   
-  // Lưu các biến thể linh hoạt bằng JSONB của PostgreSQL
-  // VD: { "size": 42, "color": "Trắng", "material": "Da" }
-  attributes  Json      
+  // Lưu các biến thể linh hoạt bằng JSONB của PostgreSQL 
+  // VD: { "color": "Blue on White", "switch": "Akko CS Jelly Red" }
+  attributes    Json      
 
-  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
-  cartItems   CartItem[]
-  orderItems  OrderItem[]
+  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems     CartItem[]
+  orderItems    OrderItem[]
 }
 
 // ==========================================
@@ -101,16 +117,15 @@ model SKU {
 model CartItem {
   id        Int      @id @default(autoincrement())
   userId    Int
-  skuId     Int
+  skuId     Int      // Liên kết trực tiếp tới biến thể cụ thể khách chọn [cite: 7, 8]
   quantity  Int      @default(1)
   addedAt   DateTime @default(now())
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   sku       SKU      @relation(fields: [skuId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, skuId]) // Một user chỉ có 1 dòng cho 1 SKU trong giỏ, nếu thêm nữa thì cộng dồn quantity
+  @@unique([userId, skuId]) // Tránh trùng lặp biến thể trong giỏ hàng [cite: 8]
 }
-
 // ==========================================
 // 4. ĐƠN HÀNG & BẢO TOÀN LỊCH SỬ
 // ==========================================
