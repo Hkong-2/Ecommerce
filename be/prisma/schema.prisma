@@ -87,6 +87,7 @@ model Product {
 
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   category Category       @relation(fields: [categoryId], references: [id])
   brand    Brand          @relation(fields: [brandId], references: [id])
@@ -116,6 +117,9 @@ model SKU {
   // Lưu các biến thể linh hoạt bằng JSONB của PostgreSQL 
   // VD: { "color": "Blue on White", "switch": "Akko CS Jelly Red" }
   attributes Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   product    Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
   images     ProductImage[] // Thêm relation để liên kết ngược từ ProductImage
