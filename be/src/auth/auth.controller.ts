@@ -1,7 +1,16 @@
-import { Controller, Get, Req, UseGuards, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Req,
+  UseGuards,
+  Res,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import type { Request, Response } from 'express';
+import { AdminLoginDto } from './dto/admin-login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -13,7 +22,8 @@ export class AuthController {
    */
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req: Request) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  googleAuth(@Req() req: Request) {
     // Controller rỗng vì Guards sẽ chặn và tự động chuyển hướng tới URL Google Auth API
   }
 
@@ -25,7 +35,7 @@ export class AuthController {
    */
   @Get('google/callback')
   @UseGuards(AuthGuard('google')) // Check lại một lần nữa đảm bảo profile đã validate từ GoogleStrategy
-  async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
+  googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
     // req.user được Inject từ hàm validate() bên GoogleStrategy
     const loginResult = this.authService.login(req.user);
 
@@ -44,5 +54,15 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   getProfile(@Req() req: Request) {
     return req.user; // Chứa userId và role (cái đã return từ validate method bên JwtStrategy)
+  }
+
+  /**
+   * Endpoint cho Admin đăng nhập bằng email và password
+   * Trả về JSON chứa JWT token
+   */
+  @Post('admin/login')
+  async adminLogin(@Body() adminLoginDto: AdminLoginDto) {
+    const user = await this.authService.validateAdminUser(adminLoginDto);
+    return this.authService.login(user);
   }
 }
