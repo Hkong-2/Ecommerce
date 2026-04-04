@@ -51,12 +51,12 @@ model Address {
 }
 
 // ==========================================
-// 2. QUẢN LÝ SẢN PHẨM & BIẾN THỂ (PHỤ KIỆN MÁY TÍNH)
+// 2. QUẢN LÝ SẢN PHẨM & BIẾN THỂ (ĐIỆN THOẠI)
 // ==========================================
 
 model Brand {
   id          Int       @id @default(autoincrement())
-  name        String // VD: Akko, Logitech, Razer
+  name        String // VD: Apple, Samsung, Xiaomi
   slug        String    @unique
   description String?   @db.Text
   logoUrl     String?
@@ -65,7 +65,7 @@ model Brand {
 
 model Category {
   id          Int       @id @default(autoincrement())
-  name        String // VD: Bàn phím cơ, Chuột gaming, Tai nghe
+  name        String // VD: Điện thoại, Máy tính bảng, Phụ kiện
   slug        String    @unique
   description String?
   products    Product[]
@@ -75,14 +75,14 @@ model Product {
   id           Int     @id @default(autoincrement())
   categoryId   Int
   brandId      Int
-  name         String // VD: Bàn phím cơ Akko 3098B
+  name         String // VD: iPhone 15 Pro Max
   slug         String  @unique
   description  String  @db.Text
   thumbnailUrl String? // Link ảnh đại diện (rất cần khi crawl)
   sourceUrl    String? // URL gốc của trang crawl dữ liệu
 
   // Lưu toàn bộ thông số kỹ thuật linh hoạt cào được từ web
-  // VD: { "layout": "98 keys", "connection": "Wireless/Bluetooth/Type-C", "led": "RGB" }
+  // VD: { "screen": "6.7 inch OLED", "chip": "A17 Pro", "battery": "4422 mAh" }
   techSpecs Json?
 
   isActive  Boolean  @default(true)
@@ -109,13 +109,13 @@ model ProductImage {
 model SKU {
   id            Int    @id @default(autoincrement())
   productId     Int
-  skuCode       String @unique // VD: AKKO-3098B-BLUE-RED (Hãng-Mẫu-Màu-Switch)
+  skuCode       String @unique // VD: IPHONE-15-PRO-MAX-256GB-TITAN
   originalPrice Float? // Giá gốc (giá gạch chéo)
   price         Float // Giá bán hiện tại
   stock         Int // Số lượng tồn kho
 
   // Lưu các biến thể linh hoạt bằng JSONB của PostgreSQL 
-  // VD: { "color": "Blue on White", "switch": "Akko CS Jelly Red" }
+  // VD: { "color": "Titan tự nhiên", "storage": "256GB" }
   attributes Json
 
   createdAt DateTime @default(now())
