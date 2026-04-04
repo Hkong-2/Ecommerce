@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
@@ -21,9 +21,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
    * @param payload Payload của JWT
    * @returns Thong tin nguoi dung (co the bo sung them logic neu can)
    */
-  async validate(payload: any) {
+
+  validate(payload: any) {
     // Nếu token chưa hết hạn và chữ ký đúng thì sẽ gọi logic này
     // Các logic khác như kiểm tra user bị khoá hay xoá chưa (tùy vào yêu cầu nghiệp vụ)
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
     return { userId: payload.sub, role: payload.role };
   }
 }
