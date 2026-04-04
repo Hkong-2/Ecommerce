@@ -11,10 +11,7 @@ export class UsersService {
       where: { id },
       include: {
         addresses: {
-          orderBy: [
-            { isDefault: 'desc' },
-            { id: 'asc' },
-          ],
+          orderBy: [{ isDefault: 'desc' }, { id: 'asc' }],
         },
       },
     });
@@ -39,10 +36,7 @@ export class UsersService {
       },
       include: {
         addresses: {
-          orderBy: [
-            { isDefault: 'desc' },
-            { id: 'asc' },
-          ],
+          orderBy: [{ isDefault: 'desc' }, { id: 'asc' }],
         },
       },
     });

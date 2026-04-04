@@ -28,7 +28,7 @@ export class RolesGuard implements CanActivate {
 
     // Yêu cầu user tồn tại trước (được inject qua AuthGuard('jwt'))
     if (!user) {
-       return false;
+      return false;
     }
 
     // Check Role của user đang login có trong mảng requiredRoles không
