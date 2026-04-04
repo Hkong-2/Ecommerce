@@ -1,5 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
+import { AdminLoginPage } from './pages/AdminLoginPage';
 import { HomePage } from './pages/HomePage';
 import ProfilePage from './pages/profile/ProfilePage';
 import { MainLayout } from './layouts/MainLayout';
@@ -12,6 +13,7 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/admin/login" element={<AdminLoginPage />} />
     </Routes>
   );
 }
