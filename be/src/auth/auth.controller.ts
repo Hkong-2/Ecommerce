@@ -30,7 +30,9 @@ export class AuthController {
     const loginResult = this.authService.login(req.user);
 
     // Redirect người dùng tới Frontend URI, kèm theo JWT ở param
-    return res.redirect(`http://localhost:5173/login?token=${loginResult.access_token}`);
+    return res.redirect(
+      `http://localhost:5173/login?token=${loginResult.access_token}`,
+    );
   }
 
   /**

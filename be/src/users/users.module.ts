@@ -8,6 +8,6 @@ import { AddressesService } from './addresses/addresses.service';
 @Module({
   imports: [PrismaModule],
   providers: [UsersService, AddressesService],
-  controllers: [UsersController, AddressesController]
+  controllers: [UsersController, AddressesController],
 })
 export class UsersModule {}

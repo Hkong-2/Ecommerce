@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
@@ -39,7 +43,11 @@ export class AddressesService {
     });
   }
 
-  async update(userId: number, addressId: number, updateAddressDto: UpdateAddressDto) {
+  async update(
+    userId: number,
+    addressId: number,
+    updateAddressDto: UpdateAddressDto,
+  ) {
     const address = await this.prisma.address.findUnique({
       where: { id: addressId },
     });
@@ -49,7 +57,9 @@ export class AddressesService {
     }
 
     if (address.userId !== userId) {
-      throw new ForbiddenException('You do not have permission to update this address');
+      throw new ForbiddenException(
+        'You do not have permission to update this address',
+      );
     }
 
     return this.prisma.$transaction(async (tx) => {
@@ -60,26 +70,26 @@ export class AddressesService {
           data: { isDefault: false },
         });
       } else if (updateAddressDto.isDefault === false && address.isDefault) {
-          // Prevent unsetting the only default address, unless they set another one.
-          // Or just allow it, but best practice is to always have 1 default.
-          const otherAddresses = await tx.address.count({
-             where: { userId, id: { not: addressId } }
+        // Prevent unsetting the only default address, unless they set another one.
+        // Or just allow it, but best practice is to always have 1 default.
+        const otherAddresses = await tx.address.count({
+          where: { userId, id: { not: addressId } },
+        });
+        if (otherAddresses > 0) {
+          // Find another address and make it default
+          const anotherAddress = await tx.address.findFirst({
+            where: { userId, id: { not: addressId } },
           });
-          if (otherAddresses > 0) {
-             // Find another address and make it default
-             const anotherAddress = await tx.address.findFirst({
-                 where: { userId, id: { not: addressId } }
-             });
-             if (anotherAddress) {
-                 await tx.address.update({
-                     where: { id: anotherAddress.id },
-                     data: { isDefault: true }
-                 });
-             }
-          } else {
-              // Only 1 address, cannot unset default
-              updateAddressDto.isDefault = true;
+          if (anotherAddress) {
+            await tx.address.update({
+              where: { id: anotherAddress.id },
+              data: { isDefault: true },
+            });
           }
+        } else {
+          // Only 1 address, cannot unset default
+          updateAddressDto.isDefault = true;
+        }
       }
 
       return tx.address.update({
@@ -99,7 +109,9 @@ export class AddressesService {
     }
 
     if (address.userId !== userId) {
-      throw new ForbiddenException('You do not have permission to delete this address');
+      throw new ForbiddenException(
+        'You do not have permission to delete this address',
+      );
     }
 
     return this.prisma.$transaction(async (tx) => {
