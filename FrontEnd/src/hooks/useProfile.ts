@@ -23,13 +23,19 @@ export interface UserProfile {
   addresses: Address[];
 }
 
+import { useAuthStore } from '../stores/authStore';
+
 export const useProfile = () => {
+  const token = useAuthStore((state) => state.token);
+
   return useQuery<UserProfile, Error>({
     queryKey: ['profile'],
     queryFn: async () => {
       const { data } = await api.get('/users/me');
       return data;
     },
+    enabled: !!token, // Only run the query if we have a token
+    retry: false, // Don't retry if it fails (e.g. 401)
   });
 };
 
