@@ -33,7 +33,8 @@ api.interceptors.response.use(
 
       // If the error happens on the login or admin login route, don't redirect
       const isAuthRoute = window.location.pathname.includes('/login');
-      const isCheckingProfile = error.config?.url?.includes('/auth/profile');
+      // Also ignore explicit profile/me checks that shouldn't force a hard redirect
+      const isCheckingProfile = error.config?.url?.includes('/auth/profile') || error.config?.url?.includes('/users/me');
 
       if (!isAuthRoute && !isCheckingProfile) {
          window.location.href = '/login';
