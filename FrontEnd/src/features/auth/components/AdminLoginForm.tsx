@@ -26,8 +26,8 @@ export const AdminLoginForm: React.FC = () => {
       const user = await authApi.getProfile();
       setUser(user);
 
-      // Redirect to home or admin dashboard
-      navigate('/', { replace: true });
+      // Redirect to admin dashboard
+      navigate('/admin/dashboard', { replace: true });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Failed to login as admin', err);
