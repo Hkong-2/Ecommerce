@@ -18,6 +18,7 @@ export class CrawlerService {
     categoryUrl: string,
     brandName: string,
     maxItems: number = 20,
+    maxPages: number = 3,
   ) {
     let browser: Browser | null = null;
     try {
@@ -45,39 +46,56 @@ export class CrawlerService {
         }
       });
 
-      await page.goto(categoryUrl, {
-        waitUntil: 'domcontentloaded',
-        timeout: 60000,
-      });
+      const productLinks = new Set<string>();
+      let currentPage = 1;
 
-      // Lấy danh sách link sản phẩm từ trang danh mục Hoàng Hà
-      const productLinks = await page.evaluate((max) => {
-        // Hoàng Hà thường bọc item trong .item hoặc các class tương tự.
-        const links = Array.from(
-          document.querySelectorAll(
-            '.list-product .item a, .col-content a.pic, .product-item a.img',
-          ),
-        );
+      while (currentPage <= maxPages && productLinks.size < maxItems) {
+        const urlToVisit =
+          currentPage === 1
+            ? categoryUrl
+            : `${categoryUrl.replace(/\/$/, '')}/page/${currentPage}/`;
+        this.logger.log(`Visiting page ${currentPage}: ${urlToVisit}`);
 
-        const validUrls = new Set<string>();
-        links.forEach((a) => {
-          const href = (a as HTMLAnchorElement).href;
-          // Lọc bỏ các link rác
-          if (
-            href &&
-            href.includes('hoanghamobile.com') &&
-            !href.includes('/tim-kiem') &&
-            !href.includes('/tin-tuc')
-          ) {
-            validUrls.add(href);
-          }
+        const response = await page
+          .goto(urlToVisit, {
+            waitUntil: 'domcontentloaded',
+            timeout: 60000,
+          })
+          .catch(() => null);
+
+        if (!response || !response.ok()) {
+          this.logger.log(
+            `Page ${currentPage} not found or error, stopping pagination.`,
+          );
+          break;
+        }
+
+        const linksOnPage = await page.evaluate(() => {
+          const items = Array.from(
+            document.querySelectorAll('.product-small, .product'),
+          );
+          return items
+            .map((item) => {
+              const a = item.querySelector('.product-title a');
+              return a ? (a as HTMLAnchorElement).href : null;
+            })
+            .filter((href) => href !== null);
         });
 
-        return Array.from(validUrls).slice(0, max);
-      }, maxItems);
+        if (linksOnPage.length === 0) {
+          break; // No more products
+        }
+
+        for (const link of linksOnPage) {
+          if (link) productLinks.add(link);
+        }
+        currentPage++;
+      }
+
+      const finalLinks = Array.from(productLinks).slice(0, maxItems);
 
       this.logger.log(
-        `Found ${productLinks.length} product links for ${brandName}`,
+        `Found ${finalLinks.length} product links for ${brandName}`,
       );
 
       const results: Array<{
@@ -92,7 +110,7 @@ export class CrawlerService {
       for (const link of productLinks) {
         try {
           // Tận dụng hàm crawl chi tiết vừa viết
-          const productData = await this.crawlHoangHaProduct(link, brandName);
+          const productData = await this.crawlSonPixelProduct(link, brandName);
           results.push(productData);
 
           // Delay 1 chút để tránh bị block
@@ -115,7 +133,7 @@ export class CrawlerService {
     }
   }
 
-  async crawlHoangHaProduct(
+  async crawlSonPixelProduct(
     url: string,
     brandName: string = 'Khác',
   ): Promise<{
@@ -139,7 +157,6 @@ export class CrawlerService {
 
       const page = await browser.newPage();
 
-      // Tối ưu tốc độ: chặn tải tài nguyên không cần thiết
       await page.setRequestInterception(true);
       page.on('request', (req) => {
         if (
@@ -151,127 +168,134 @@ export class CrawlerService {
         }
       });
 
-      // Navigate to the product page
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
 
-      // 1. Lấy Tên Sản Phẩm (Từ H1)
-      const productNameRaw = await page.evaluate(() => {
-        const titleEl = document.querySelector('h1');
+      // 1. Get Product Name
+      const productName = await page.evaluate(() => {
+        const titleEl = document.querySelector('h1.product-title, h1');
         return titleEl ? titleEl.textContent?.trim() : null;
       });
 
-      if (!productNameRaw) {
+      if (!productName) {
         throw new Error('Could not find product name on the page.');
       }
 
-      // Tách tên máy và dung lượng từ tên trên Web Hoàng Hà (ví dụ: "Samsung Galaxy S24 Ultra - 256GB - Chính hãng")
-      const productName = productNameRaw.split('-')[0].trim();
-      let storageFromTitle = 'Default';
-      const parts = productNameRaw.split('-');
-      if (parts.length > 1) {
-        // Đoán dung lượng nằm ở phần thứ 2
-        const possibleStorage = parts[1].trim();
-        if (possibleStorage.includes('GB') || possibleStorage.includes('TB')) {
-          storageFromTitle = possibleStorage;
-        }
-      }
-
-      // 2. Lấy Thông số kỹ thuật
+      // 2. Get Tech Specs from the second table (as seen in screenshot)
       const techSpecs = await page.evaluate(() => {
         const specs: Record<string, string> = {};
-        // Hoàng Hà Mobile lưu thông số trong các class specs-special hoặc table. Mò từ body content
-        const rows = document.querySelectorAll(
-          '.specs-special li, .specs-special p, table tr',
-        );
+        const tables = document.querySelectorAll('table');
 
-        rows.forEach((row) => {
-          const text = row.textContent?.trim() || '';
-          if (text.includes(':')) {
-            const parts = text.split(':');
-            if (parts.length >= 2) {
-              specs[parts[0].trim()] = parts.slice(1).join(':').trim();
-            }
-          } else {
-            // Table layout (th, td)
-            const keyEl = row.querySelector('td:first-child, th');
-            const valEl = row.querySelector('td:last-child');
-            if (keyEl && valEl && keyEl !== valEl) {
-              const key = keyEl.textContent?.trim().replace(':', '') || '';
-              const val = valEl.textContent?.trim() || '';
-              if (key && val) specs[key] = val;
+        // Find the right table. Usually the first table is variations (if any), the second is specs.
+        // Let's just find the table that has 'Kích thước màn hình' or similar keys.
+        let targetTable: HTMLTableElement | null = null;
+        for (const table of tables) {
+          if (
+            table.textContent?.includes('màn hình') ||
+            table.textContent?.includes('Camera') ||
+            table.textContent?.includes('Pin')
+          ) {
+            targetTable = table;
+            // Prefer a table that does NOT have variation selectors like 'Chọn một tùy chọn'
+            if (!table.textContent?.includes('Chọn một tùy chọn')) {
+              break;
             }
           }
-        });
+        }
+
+        if (targetTable) {
+          const rows = targetTable.querySelectorAll('tr');
+          rows.forEach((row) => {
+            const th = row.querySelector('th, td:first-child');
+            const td = row.querySelectorAll('td');
+            // Sometimes format is th - td, sometimes td - td
+            const valCell = td.length > 1 ? td[1] : td[0];
+
+            if (th && valCell && th !== valCell) {
+              const key = th.textContent?.trim() || '';
+              const val =
+                valCell.textContent?.trim().replace(/\s+/g, ' ') || '';
+              if (
+                key &&
+                val &&
+                !key.includes('Chọn một tùy chọn') &&
+                !val.includes('Chọn một tùy chọn')
+              ) {
+                specs[key] = val;
+              }
+            }
+          });
+        }
         return specs;
       });
 
-      // 3. Lấy Màu sắc và Giá
-      // Vì Hoàng Hà Mobile render sẵn các ô màu trong HTML (class .color-options hoặc danh sách các label)
+      // 3. Get Variants from data-product_variations JSON
       const variantsData = await page.evaluate(() => {
-        const results: Array<{ color: string; priceText: string }> = [];
+        const form = document.querySelector('.variations_form');
+        if (!form) return null;
 
-        // Tìm các option màu (Thường là các thẻ <a> hoặc <label> trong khối .product-option)
-        const colorElements = document.querySelectorAll(
-          '.product-option .color-options .item, .product-option label.color',
-        );
+        const dataAttr = form.getAttribute('data-product_variations');
+        if (!dataAttr) return null;
 
-        colorElements.forEach((el) => {
-          // Lấy tên màu (thường nằm trong thẻ span, strong hoặc text trực tiếp)
-          const colorNameEl = el.querySelector('strong, span.name, div.title');
-          const color = colorNameEl
-            ? colorNameEl.textContent?.trim()
-            : el.textContent?.trim().split('\n')[0].trim() || '';
-
-          // Lấy giá (thường nằm cạnh màu)
-          const priceEl = el.querySelector('span.price, div.price');
-          const priceText = priceEl ? priceEl.textContent?.trim() : null;
-
-          if (color) {
-            results.push({
-              color: color,
-              priceText: priceText || '',
-            });
-          }
-        });
-
-        // Fallback nếu DOM thay đổi: tìm price chính đang active
-        if (results.length === 0) {
-          const activePriceEl = document.querySelector(
-            '.price-current, .price strong, .product-price strong',
-          );
-          results.push({
-            color: 'Mặc định',
-            priceText: activePriceEl
-              ? activePriceEl.textContent?.trim() || ''
-              : '',
-          });
+        try {
+          return JSON.parse(dataAttr);
+        } catch (e) {
+          return null;
         }
-
-        return results;
       });
 
       const variants: Variant[] = [];
-      for (const v of variantsData) {
-        let price = 0;
-        if (v.priceText) {
-          const numericString = v.priceText.replace(/[^0-9]/g, '');
-          if (numericString) {
-            price = parseInt(numericString, 10);
+
+      if (
+        variantsData &&
+        Array.isArray(variantsData) &&
+        variantsData.length > 0
+      ) {
+        for (const v of variantsData) {
+          const attrs: Record<string, string> = {};
+
+          // Map woocommerce attributes
+          // example: "attribute_pa_mau-sac": "trang-su", "attribute_pa_bo-nho-trong": "128gb", "attribute_pa_option": "new-seal"
+          for (const [key, value] of Object.entries(v.attributes || {})) {
+            let niceKey = key
+              .replace('attribute_pa_', '')
+              .replace('attribute_', '');
+            if (niceKey === 'mau-sac') niceKey = 'color';
+            if (niceKey === 'bo-nho-trong') niceKey = 'storage';
+            if (niceKey === 'option') niceKey = 'condition';
+
+            attrs[niceKey] = (value as string).replace(/-/g, ' ');
           }
+
+          // Ensure color and storage exist for backward compatibility with schema
+          if (!attrs.color) attrs.color = 'Mặc định';
+          if (!attrs.storage) attrs.storage = 'Mặc định';
+
+          variants.push({
+            attributes: attrs as any,
+            price: v.display_price || 0,
+            priceTextRaw: v.display_price ? v.display_price.toString() : null,
+          });
         }
+      } else {
+        // Fallback for simple products
+        const simplePrice = await page.evaluate(() => {
+          const priceEl = document.querySelector(
+            '.price .woocommerce-Price-amount bdi',
+          );
+          if (!priceEl) return 0;
+          const text = priceEl.textContent?.replace(/[^0-9]/g, '') || '';
+          return parseInt(text, 10) || 0;
+        });
 
         variants.push({
-          attributes: {
-            storage: storageFromTitle,
-            color: v.color || 'Mặc định',
-          },
-          price: price,
-          priceTextRaw: v.priceText || null,
+          attributes: { storage: 'Mặc định', color: 'Mặc định' },
+          price: simplePrice,
+          priceTextRaw: simplePrice.toString(),
         });
       }
 
       this.logger.log(
-        `Crawl done for ${productName} (${storageFromTitle}). Found ${variants.length} color variants.`,
+        `Crawl done for ${productName}. Found ${variants.length} variants.`,
       );
 
       // Lưu vào Database
