@@ -1,7 +1,17 @@
 import { PrismaClient, Role } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
 import * as bcrypt from 'bcrypt';
 
-const prisma = new PrismaClient();
+// 1. Lấy chuỗi kết nối từ biến môi trường (Prisma CLI sẽ tự load file .env)
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error('DATABASE_URL is not defined');
+}
+
+// 2. Khởi tạo Prisma Client kèm với PostgreSQL Adapter
+const adapter = new PrismaPg({ connectionString });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const adminEmail = 'admin@example.com';

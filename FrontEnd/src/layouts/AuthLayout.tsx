@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export const AuthLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
@@ -13,9 +14,11 @@ export const AuthLayout: React.FC<{ children: React.ReactNode }> = ({ children }
         </div>
 
         <div className="relative z-10 space-y-6 text-center">
-          <h1 className="text-6xl font-black tracking-tighter uppercase mb-4 drop-shadow-lg">
-            Shoora
-          </h1>
+          <Link to="/" className="inline-block group">
+            <h1 className="text-6xl font-black tracking-tighter uppercase mb-4 drop-shadow-lg transition-transform duration-300 group-hover:scale-105">
+              Shoora
+            </h1>
+          </Link>
           <p className="text-xl font-light tracking-wide max-w-md mx-auto leading-relaxed">
             Step into the future. Discover exclusive shoes and elevate your style.
           </p>

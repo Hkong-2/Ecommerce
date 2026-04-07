@@ -7,6 +7,13 @@ export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
+  private _brand: any;
+  public get brand(): any {
+    return this._brand;
+  }
+  public set brand(value: any) {
+    this._brand = value;
+  }
   constructor() {
     const connectionString = process.env.DATABASE_URL;
 
