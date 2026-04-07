@@ -7,6 +7,7 @@ import { Provider } from 'react-redux';
 import { store } from './stores/store.ts';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from './components/ui/sonner.tsx';
+import './i18n';
 
 const queryClient = new QueryClient();
 

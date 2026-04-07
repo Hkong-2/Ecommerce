@@ -11,11 +11,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
+import { useTranslation } from 'react-i18next';
 
 export function Header() {
   const { token, logout } = useAuthStore();
   const navigate = useNavigate();
   const { data: profile } = useProfile();
+  const { t, i18n } = useTranslation();
 
   // Get initials for avatar fallback
   const getInitials = (name?: string) => {
@@ -33,20 +35,25 @@ export function Header() {
     navigate('/');
   };
 
+  const toggleLanguage = () => {
+    const newLang = i18n.language === 'en' ? 'vi' : 'en';
+    i18n.changeLanguage(newLang);
+  };
+
   return (
-    <header className="bg-white border-b sticky top-0 z-50">
+    <header className="bg-white border-b sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="text-xl font-bold tracking-tight text-blue-600">
-          SHOORA
+        <Link to="/" className="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
+          {t('brand')}
         </Link>
 
         {/* Search Bar - Placeholder */}
         <div className="hidden md:flex flex-1 max-w-md mx-8 relative">
           <input
             type="text"
-            placeholder="Search products..."
-            className="w-full px-4 py-2 border rounded-full bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm"
+            placeholder={t('search_placeholder')}
+            className="w-full px-4 py-2 border rounded-full bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm transition-all"
           />
           <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -57,9 +64,17 @@ export function Header() {
 
         {/* Actions */}
         <div className="flex items-center gap-4">
+          {/* Language Toggle */}
+          <button
+            onClick={toggleLanguage}
+            className="text-sm font-semibold px-2 py-1 rounded hover:bg-slate-100 text-slate-700 transition-colors"
+          >
+            {i18n.language === 'en' ? 'VI' : 'EN'}
+          </button>
+
           {/* Cart Placeholder */}
-          <button className="p-2 hover:bg-gray-100 rounded-full relative">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <button className="p-2 hover:bg-slate-100 rounded-full relative transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
             <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
@@ -70,8 +85,8 @@ export function Header() {
           {/* User Auth/Avatar will go here */}
           <div>
             {!token ? (
-              <Button asChild>
-                <Link to="/login">Login</Link>
+              <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white rounded-full px-6">
+                <Link to="/login">{t('login')}</Link>
               </Button>
             ) : (
               <DropdownMenu>
@@ -96,14 +111,14 @@ export function Header() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild className="cursor-pointer">
-                    <Link to="/profile">My Profile</Link>
+                    <Link to="/profile">{t('my_profile')}</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer">
-                    My Orders
+                    {t('my_orders')}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50">
-                    Log out
+                    {t('logout')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
