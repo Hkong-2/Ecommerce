@@ -2,10 +2,21 @@ import { Injectable, Logger } from '@nestjs/common';
 import puppeteer, { Browser } from 'puppeteer';
 import { PrismaService } from '../prisma/prisma.service';
 
+import * as path from 'path';
+import { downloadImage } from './download.util';
+
 export interface Variant {
   attributes: { storage: string; color: string };
   price: number;
   priceTextRaw: string | null;
+}
+
+export interface CrawledData {
+  productName: string | null | undefined;
+  sourceUrl: string;
+  techSpecs: Record<string, string>;
+  variants: Variant[];
+  images: string[];
 }
 
 @Injectable()
@@ -98,12 +109,7 @@ export class CrawlerService {
         `Found ${finalLinks.length} product links for ${brandName}`,
       );
 
-      const results: Array<{
-        productName: string | null | undefined;
-        sourceUrl: string;
-        techSpecs: Record<string, string>;
-        variants: Variant[];
-      }> = [];
+      const results: Array<CrawledData> = [];
 
       // Chạy crawl từng link
       // Để tránh nghẽn, có thể chạy vòng lặp tuần tự (hoặc song song có giới hạn)
@@ -136,12 +142,7 @@ export class CrawlerService {
   async crawlSonPixelProduct(
     url: string,
     brandName: string = 'Khác',
-  ): Promise<{
-    productName: string | null | undefined;
-    sourceUrl: string;
-    techSpecs: Record<string, string>;
-    variants: Variant[];
-  }> {
+  ): Promise<CrawledData> {
     let browser: Browser | null = null;
     try {
       this.logger.log(`Starting to crawl Product: ${url}`);
@@ -169,6 +170,37 @@ export class CrawlerService {
       });
 
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
+
+      // 0. Get Images
+      const imageUrls = await page.evaluate(() => {
+        const images: string[] = [];
+        // WooCommerce single product gallery images
+        const galleryItems = document.querySelectorAll(
+          '.woocommerce-product-gallery__image a',
+        );
+        galleryItems.forEach((item) => {
+          const href = (item as HTMLAnchorElement).href;
+          if (href && !images.includes(href)) {
+            images.push(href);
+          }
+        });
+
+        // Fallback: If no gallery, find the main image
+        if (images.length === 0) {
+          const mainImage = document.querySelector(
+            '.woocommerce-main-image, .wp-post-image',
+          );
+          if (mainImage) {
+            const src =
+              mainImage.getAttribute('src') ||
+              mainImage.getAttribute('data-src');
+            if (src) images.push(src);
+          }
+        }
+        return images;
+      });
+
+      this.logger.log(`Found ${imageUrls.length} images for ${url}`);
 
       // 1. Get Product Name
       const productName = await page.evaluate(() => {
@@ -301,7 +333,13 @@ export class CrawlerService {
       // Lưu vào Database
       if (productName) {
         await this.saveToDatabase(
-          { productName, sourceUrl: url, techSpecs, variants },
+          {
+            productName,
+            sourceUrl: url,
+            techSpecs,
+            variants,
+            images: imageUrls,
+          },
           brandName,
         );
       }
@@ -311,6 +349,7 @@ export class CrawlerService {
         sourceUrl: url,
         techSpecs,
         variants,
+        images: imageUrls,
       };
     } catch (error) {
       if (error instanceof Error) {
@@ -335,6 +374,7 @@ export class CrawlerService {
       sourceUrl: string;
       techSpecs: Record<string, string>;
       variants: Variant[];
+      images: string[];
     },
     brandName: string = 'Khác',
   ) {
@@ -363,7 +403,20 @@ export class CrawlerService {
       });
     }
 
-    // 2. Upsert Product
+    // 2. Download Images
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'products');
+    const localImageUrls: string[] = [];
+
+    for (const url of data.images) {
+      const filename = await downloadImage(url, uploadDir);
+      if (filename) {
+        localImageUrls.push(`/uploads/products/${filename}`);
+      }
+    }
+
+    const thumbnailUrl = localImageUrls.length > 0 ? localImageUrls[0] : null;
+
+    // 3. Upsert Product
     const slug = data.productName
       .toLowerCase()
       .replace(/ /g, '-')
@@ -373,6 +426,7 @@ export class CrawlerService {
       update: {
         sourceUrl: data.sourceUrl,
         techSpecs: data.techSpecs,
+        thumbnailUrl: thumbnailUrl || undefined,
         // Cập nhật updatedAt tự động do prisma xử lý @updatedAt
       },
       create: {
@@ -381,12 +435,47 @@ export class CrawlerService {
         description: data.productName, // Tạm dùng tên làm mô tả
         sourceUrl: data.sourceUrl,
         techSpecs: data.techSpecs,
+        thumbnailUrl: thumbnailUrl,
         categoryId: category.id,
         brandId: brand.id,
       },
     });
 
-    // 3. Upsert SKUs
+    // 4. Update Product Images
+    // Remove old images physically and in db before adding new ones
+    const oldImages = await this.prisma.productImage.findMany({
+      where: { productId: product.id }
+    });
+
+    for (const oldImg of oldImages) {
+      if (oldImg.imageUrl.startsWith('/uploads/products/')) {
+        const filePath = path.join(process.cwd(), 'public', oldImg.imageUrl);
+        try {
+          if (require('fs').existsSync(filePath)) {
+            require('fs').unlinkSync(filePath);
+          }
+        } catch (err) {
+          this.logger.error(`Error deleting old image ${filePath}: ${err}`);
+        }
+      }
+    }
+
+    await this.prisma.productImage.deleteMany({
+      where: { productId: product.id },
+    });
+
+    if (localImageUrls.length > 0) {
+      const imageRecords = localImageUrls.map((url) => ({
+        productId: product.id,
+        imageUrl: url,
+        altText: data.productName,
+      }));
+      await this.prisma.productImage.createMany({
+        data: imageRecords,
+      });
+    }
+
+    // 5. Upsert SKUs
     for (const variant of data.variants) {
       if (!variant.attributes.storage || !variant.attributes.color) continue;
 
