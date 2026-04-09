@@ -444,7 +444,7 @@ export class CrawlerService {
     // 4. Update Product Images
     // Remove old images physically and in db before adding new ones
     const oldImages = await this.prisma.productImage.findMany({
-      where: { productId: product.id }
+      where: { productId: product.id },
     });
 
     for (const oldImg of oldImages) {

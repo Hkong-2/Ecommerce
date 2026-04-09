@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { CrawlerModule } from './crawler/crawler.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ProductsModule } from './products/products.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { join } from 'path';
     AuthModule,
     UsersModule,
     CrawlerModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
