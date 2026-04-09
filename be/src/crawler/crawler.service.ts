@@ -28,8 +28,8 @@ export class CrawlerService {
   async crawlCategory(
     categoryUrl: string,
     brandName: string,
-    maxItems: number = 20,
-    maxPages: number = 3,
+    maxItems: number = 10,
+    maxPages: number = 1,
   ) {
     let browser: Browser | null = null;
     try {
