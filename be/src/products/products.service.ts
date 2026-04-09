@@ -51,7 +51,8 @@ export class ProductsService {
       return [
         { id: 1, name: "iPhone 15 Pro Max", slug: "iphone-15-pro-max", thumbnailUrl: null, brandName: "Apple", lowestPrice: 29990000 },
         { id: 2, name: "Samsung Galaxy S24 Ultra", slug: "samsung-galaxy-s24-ultra", thumbnailUrl: null, brandName: "Samsung", lowestPrice: 33990000 },
-        { id: 3, name: "Google Pixel 8 Pro", slug: "google-pixel-8-pro", thumbnailUrl: null, brandName: "Google", lowestPrice: 24990000 }
+        { id: 3, name: "Google Pixel 8 Pro", slug: "google-pixel-8-pro", thumbnailUrl: null, brandName: "Google", lowestPrice: 24990000 },
+        { id: 4, name: "0 VND Product", slug: "0-vnd-product", thumbnailUrl: null, brandName: "Test", lowestPrice: 0 }
       ];
     }
   }

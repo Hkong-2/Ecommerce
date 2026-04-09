@@ -17,7 +17,8 @@ import { BrandsModule } from './brands/brands.module';
       isGlobal: true, // Biến môi trường sử dụng ở toàn bộ module
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'),
+      rootPath: join(__dirname, '..', '..', 'public'), // Fix for dist/src/app.module.js -> ../../public
+      serveRoot: '/', // Optional, default is '/'
     }),
     PrismaModule,
     AuthModule,
