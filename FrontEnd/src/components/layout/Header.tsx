@@ -12,9 +12,28 @@ import {
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
 import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from 'react';
+import { brandsApi } from '../../api/brands';
+import type { Brand } from '../../api/brands';
+import { getFullImageUrl } from '../../utils/image';
+import { CaretDownIcon } from '@radix-ui/react-icons';
 
 export function Header() {
   const { token, logout } = useAuthStore();
+  const [brands, setBrands] = useState<Brand[]>([]);
+
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        const data = await brandsApi.getAllBrands();
+        setBrands(data);
+      } catch (error) {
+        console.error("Failed to load brands", error);
+      }
+    };
+    fetchBrands();
+  }, []);
+
   const navigate = useNavigate();
   const { data: profile } = useProfile();
   const { t, i18n } = useTranslation();
@@ -42,11 +61,39 @@ export function Header() {
 
   return (
     <header className="bg-white border-b sticky top-0 z-50 shadow-sm">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
-          {t('brand')}
-        </Link>
+      <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
+        {/* Logo & Categories */}
+        <div className="flex items-center gap-6">
+          <Link to="/" className="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500 shrink-0">
+            {t('brand')}
+          </Link>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="font-semibold text-slate-700 hover:bg-slate-100 hidden md:flex items-center gap-1">
+                Danh mục
+                <CaretDownIcon className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56 p-2 bg-white rounded-xl shadow-xl border border-slate-100">
+              {brands.map(brand => (
+                <DropdownMenuItem key={brand.id} asChild className="rounded-lg cursor-pointer focus:bg-slate-50 mb-1 last:mb-0">
+                  <Link to={`#`} className="flex items-center gap-3 py-2 px-3">
+                    {brand.logoUrl ? (
+                       <img src={getFullImageUrl(brand.logoUrl)} alt={brand.name} className="w-6 h-6 object-contain" />
+                    ) : (
+                       <div className="w-6 h-6 bg-slate-100 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-400">{brand.name.substring(0,2)}</div>
+                    )}
+                    <span className="font-medium text-slate-700">{brand.name}</span>
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+              {brands.length === 0 && (
+                <div className="py-4 text-center text-sm text-slate-500">Đang tải...</div>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
 
         {/* Search Bar - Placeholder */}
         <div className="hidden md:flex flex-1 max-w-md mx-8 relative">
