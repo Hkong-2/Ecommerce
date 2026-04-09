@@ -33,7 +33,6 @@ export class AuthService {
         throw new Error('No email found from Google profile');
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       let user = await this.prisma.user.findUnique({
         where: { email },
       });
