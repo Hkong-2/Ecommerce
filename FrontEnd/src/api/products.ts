@@ -9,9 +9,17 @@ export interface HomepageProduct {
   lowestPrice: number | null;
 }
 
+export interface PaginatedProductsResponse {
+  data: HomepageProduct[];
+  total: number;
+  hasMore: boolean;
+}
+
 export const productsApi = {
-  getHomepageProducts: async (): Promise<HomepageProduct[]> => {
-    const response = await api.get<HomepageProduct[]>('/api/products/homepage');
+  getHomepageProducts: async (page: number = 1, limit: number = 6): Promise<PaginatedProductsResponse> => {
+    const response = await api.get<PaginatedProductsResponse>(`/api/products/homepage`, {
+      params: { page, limit }
+    });
     return response.data;
   },
 };
