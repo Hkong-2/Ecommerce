@@ -138,18 +138,12 @@ export const HomePage: React.FC = () => {
 
         {/* Product Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product, index) => {
-              // Add a "Premium" badge to the first 3 items (mocking top tier)
-              const isPremium = index < 3;
+          {products.map((product) => {
+
 
               return (
               <Link to={`/product/${product.slug}`} key={product.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 relative">
 
-                {isPremium && (
-                  <div className="absolute top-4 left-4 z-20 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
-                    <TrendingUp className="w-3 h-3" /> Premium
-                  </div>
-                )}
 
                 {/* Image Section */}
                 <div className="aspect-square bg-gradient-to-b from-slate-50 to-white relative p-8 flex items-center justify-center">
