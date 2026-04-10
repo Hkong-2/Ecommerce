@@ -70,18 +70,33 @@ export const ProductDetailPage: React.FC = () => {
     return () => clearInterval(intervalId);
   }, [product, isHoveringImage]);
 
-  // Handle attribute selection
+  // Handle attribute selection with smart fallback
   const handleAttributeSelect = (key: string, value: string) => {
-    if (!product) return;
+    if (!product || !product.skus) return;
 
-    const newSelectedAttributes = { ...selectedAttributes, [key]: value };
-    setSelectedAttributes(newSelectedAttributes);
+    // 1. Speculatively apply the new selection
+    let newSelectedAttributes = { ...selectedAttributes, [key]: value };
 
-    // Find if a SKU matches the new combination
-    const matchingSku = product.skus.find(sku => {
+    // 2. Look for an exact match first
+    let matchingSku = product.skus.find(sku => {
       if (!sku.attributes) return false;
       return Object.entries(newSelectedAttributes).every(([k, v]) => sku.attributes[k] === v);
     });
+
+    // 3. If no exact match, fallback to the first valid SKU that HAS the newly selected attribute
+    if (!matchingSku) {
+      matchingSku = product.skus.find(sku => {
+         return sku.attributes && sku.attributes[key] === value;
+      });
+
+      // If we found a fallback SKU, update all selected attributes to match this valid SKU
+      if (matchingSku && matchingSku.attributes) {
+        newSelectedAttributes = { ...matchingSku.attributes };
+      }
+    }
+
+    // 4. Update states
+    setSelectedAttributes(newSelectedAttributes);
 
     if (matchingSku) {
       setSelectedSku(matchingSku);
@@ -90,7 +105,8 @@ export const ProductDetailPage: React.FC = () => {
         setMainImage(skuImage.imageUrl);
       }
     } else {
-      setSelectedSku(null); // No exact match found for this combination
+      // Fallback if somehow there's absolutely no SKU with this attribute
+      setSelectedSku(null);
     }
   };
 
@@ -264,14 +280,14 @@ export const ProductDetailPage: React.FC = () => {
                               <button
                                 key={value}
                                 onClick={() => handleAttributeSelect(key, value)}
-                                disabled={!isAvailable}
                                 className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
                                   isSelected
                                     ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
                                     : !isAvailable
-                                      ? 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed'
-                                      : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                                      ? 'border-slate-200 text-slate-400 opacity-60 hover:border-blue-300 hover:text-blue-600 hover:opacity-100 bg-slate-50'
+                                      : 'border-slate-200 text-slate-700 hover:border-blue-400 hover:text-blue-700 hover:bg-blue-50'
                                 }`}
+                                title={!isAvailable ? "Click to switch to this option (will adjust other attributes)" : ""}
                               >
                                 {value}
                               </button>
