@@ -152,15 +152,6 @@ export const HomePage: React.FC = () => {
       <div className="space-y-12">
         <ProductFilter onFilterChange={setFilters} initialFilters={filters} />
 
-        {/* Brand Highlights Row */}
-        <div className="flex flex-wrap justify-center gap-4 mb-10 relative z-20">
-            {['Apple', 'Samsung', 'Google', 'Xiaomi', 'Oppo'].map(brand => (
-                <div key={brand} className="px-8 py-2.5 bg-white/60 backdrop-blur-md rounded-full shadow-sm border border-slate-200/50 text-slate-700 font-bold hover:bg-white hover:text-blue-600 hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
-                    {brand}
-                </div>
-            ))}
-        </div>
-
         {/* Product Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {products.map((product) => {
@@ -301,7 +292,6 @@ export const HomePage: React.FC = () => {
          <div className="mb-12 text-center md:text-left flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
               <h3 className="text-3xl font-black text-slate-800">{t('home.products.featured')}</h3>
-              <p className="text-slate-500 mt-2">{t('home.products.subtitle')}</p>
             </div>
          </div>
          {renderContent()}

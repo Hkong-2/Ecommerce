@@ -24,6 +24,7 @@ export function BrandPage() {
 
   // Fetch brand details
   useEffect(() => {
+    window.scrollTo(0, 0);
     const fetchBrandDetails = async () => {
       if (!brandId) return;
       try {
@@ -104,17 +105,17 @@ export function BrandPage() {
 
         {/* Brand Header */}
         <div className="flex items-center gap-4 mb-8 bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-            {brand?.logoUrl ? (
-                <img src={getFullImageUrl(brand.logoUrl)} alt={brand.name} className="h-12 object-contain" />
-            ) : (
-                <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center font-bold text-slate-400">
-                    {brand?.name?.substring(0, 2) || 'BR'}
-                </div>
-            )}
-            <div>
-                <h1 className="text-2xl md:text-3xl font-bold">{brand?.name || 'Đang tải...'}</h1>
-                <p className="text-slate-500 mt-1">{total} sản phẩm</p>
+          {brand?.logoUrl ? (
+            <img src={getFullImageUrl(brand.logoUrl)} alt={brand.name} className="h-12 object-contain" />
+          ) : (
+            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center font-bold text-slate-400">
+              {brand?.name?.substring(0, 2) || 'BR'}
             </div>
+          )}
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold">{brand?.name || 'Đang tải...'}</h1>
+            <p className="text-slate-500 mt-1">{total} sản phẩm</p>
+          </div>
         </div>
 
         {/* Product Grid */}
@@ -133,28 +134,28 @@ export function BrandPage() {
               {products.map((product) => (
                 <Link to={`/product/${product.slug}`} key={product.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 relative">
                   <div className="aspect-square bg-white relative p-6 flex items-center justify-center">
-                      {product.thumbnailUrl ? (
-                          <img
-                              src={getFullImageUrl(product.thumbnailUrl)}
-                              alt={product.name}
-                              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                          />
-                      ) : (
-                          <div className="flex flex-col items-center justify-center text-slate-300">
-                              <Smartphone className="w-12 h-12 mb-2 opacity-50" />
-                          </div>
-                      )}
+                    {product.thumbnailUrl ? (
+                      <img
+                        src={getFullImageUrl(product.thumbnailUrl)}
+                        alt={product.name}
+                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center text-slate-300">
+                        <Smartphone className="w-12 h-12 mb-2 opacity-50" />
+                      </div>
+                    )}
                   </div>
                   <div className="p-5 flex flex-col flex-grow bg-slate-50 z-10 border-t border-slate-100">
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{product.brandName}</span>
-                      <h3 className="font-bold text-sm text-slate-800 line-clamp-2 leading-snug flex-grow group-hover:text-blue-600 transition-colors">{product.name}</h3>
-                      <div className="mt-3 pt-3 border-t border-slate-200/50">
-                          <p className="text-blue-600 font-black text-lg">
-                              {product.lowestPrice !== null && product.lowestPrice !== 0
-                                  ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.lowestPrice)
-                                  : 'Liên hệ'}
-                          </p>
-                      </div>
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{product.brandName}</span>
+                    <h3 className="font-bold text-sm text-slate-800 line-clamp-2 leading-snug flex-grow group-hover:text-blue-600 transition-colors">{product.name}</h3>
+                    <div className="mt-3 pt-3 border-t border-slate-200/50">
+                      <p className="text-blue-600 font-black text-lg">
+                        {product.lowestPrice !== null && product.lowestPrice !== 0
+                          ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.lowestPrice)
+                          : 'Liên hệ'}
+                      </p>
+                    </div>
                   </div>
                 </Link>
               ))}
