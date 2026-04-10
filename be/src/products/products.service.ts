@@ -154,6 +154,111 @@ export class ProductsService {
     }
   }
 
+  async searchAndFilterProducts(params: {
+    query?: string;
+    brandId?: number;
+    minPrice?: number;
+    maxPrice?: number;
+    sortBy?: string;
+    page: number;
+    limit: number;
+  }) {
+    const { query, brandId, minPrice, maxPrice, sortBy, page, limit } = params;
+
+    // Build the where clause
+    const where: any = { isActive: true };
+
+    if (query) {
+      where.name = { contains: query, mode: 'insensitive' };
+    }
+
+    if (brandId) {
+      where.brandId = brandId;
+    }
+
+    // SKU filtering for price range
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.skus = {
+        some: {
+          price: {
+            ...(minPrice !== undefined ? { gte: minPrice } : {}),
+            ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
+          },
+        },
+      };
+    }
+
+    // Determine sorting
+    let orderBy: any = undefined;
+    if (sortBy === 'newest') {
+      orderBy = { createdAt: 'desc' };
+    } else if (sortBy === 'price_asc') {
+       orderBy = { id: 'asc' }; // fallback for prisma query
+    } else if (sortBy === 'price_desc') {
+       orderBy = { id: 'asc' }; // fallback for prisma query
+    }
+
+    const startIndex = (page - 1) * limit;
+
+    // Fetch products
+    const [total, products] = await Promise.all([
+      this.prisma.product.count({ where }),
+      this.prisma.product.findMany({
+        where,
+        include: {
+          brand: { select: { name: true } },
+          skus: { select: { price: true } },
+        },
+        orderBy: orderBy || { createdAt: 'desc' }, // default sort
+        // If sorting by price, we can't reliably paginate via DB since lowestPrice is dynamic in JS.
+        // For a production app, we should add a `lowestPrice` cache column on Product.
+        // For now, if we are sorting by price, we have to fetch all, sort, then paginate (Not ideal, but functional for small dataset).
+        // If not sorting by price, we paginate at DB level.
+        ...(sortBy === 'price_asc' || sortBy === 'price_desc' ? {} : { skip: startIndex, take: limit })
+      }),
+    ]);
+
+    // Map to frontend structure
+    let mappedProducts = products.map((product) => {
+      const lowestPrice =
+        product.skus.length > 0
+          ? Math.min(...product.skus.map((sku) => Number(sku.price)))
+          : 0;
+
+      return {
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        thumbnailUrl: product.thumbnailUrl,
+        brandName: product.brand ? product.brand.name : 'Unknown Brand',
+        lowestPrice: lowestPrice,
+      };
+    });
+
+    let paginatedData = mappedProducts;
+    let hasMore = false;
+
+    // In-memory sort and pagination for price
+    if (sortBy === 'price_asc' || sortBy === 'price_desc') {
+      if (sortBy === 'price_asc') {
+        mappedProducts.sort((a, b) => a.lowestPrice - b.lowestPrice);
+      } else {
+        mappedProducts.sort((a, b) => b.lowestPrice - a.lowestPrice);
+      }
+      const endIndex = startIndex + limit;
+      paginatedData = mappedProducts.slice(startIndex, endIndex);
+      hasMore = endIndex < mappedProducts.length;
+    } else {
+       hasMore = total > startIndex + limit;
+    }
+
+    return {
+      data: paginatedData,
+      total: total,
+      hasMore: hasMore,
+    };
+  }
+
   async getProductBySlug(slug: string) {
     const product = await this.prisma.product.findUnique({
       where: {

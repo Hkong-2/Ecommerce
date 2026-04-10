@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { getFullImageUrl } from '../utils/image';
 import { Loader2, Smartphone, ShieldCheck } from 'lucide-react';
 import heroPhone from '../assets/hero-phone.png';
+import { ProductFilter } from '../components/ui/ProductFilter';
 
 export const HomePage: React.FC = () => {
   const { user, isAuthenticated, isLoading: isAuthLoading } = useSelector((state: RootState) => state.auth);
@@ -24,7 +25,10 @@ export const HomePage: React.FC = () => {
   // Pagination State
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const limit = 6;
+  const limit = 12;
+
+  // Filter State
+  const [filters, setFilters] = useState<{ minPrice?: number; maxPrice?: number; sortBy?: string }>({});
 
   useEffect(() => {
      // If authenticated but user profile is missing, try fetching it.
@@ -41,40 +45,56 @@ export const HomePage: React.FC = () => {
      fetchProfile();
   }, [isAuthenticated, user, dispatch]);
 
-  // Initial Fetch
-  useEffect(() => {
-    const fetchInitialProducts = async () => {
-      try {
-        setIsProductsLoading(true);
-        const response = await productsApi.getHomepageProducts(1, limit);
-        setProducts(response.data);
-        setHasMore(response.hasMore);
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-        setProductsError("Could not load products. Please try again later.");
-      } finally {
-        setIsProductsLoading(false);
-      }
-    };
-    fetchInitialProducts();
-  }, []);
-
-  const loadMore = async () => {
-    if (isFetchingMore || !hasMore) return;
-
+  // Fetch Function
+  const fetchProducts = async (isLoadMore = false) => {
     try {
-      setIsFetchingMore(true);
-      const nextPage = page + 1;
-      const response = await productsApi.getHomepageProducts(nextPage, limit);
+      if (isLoadMore) {
+        setIsFetchingMore(true);
+      } else {
+        setIsProductsLoading(true);
+      }
 
-      setProducts(prev => [...prev, ...response.data]);
-      setPage(nextPage);
+      const currentPage = isLoadMore ? page + 1 : 1;
+
+      const params = {
+        page: currentPage,
+        limit,
+        ...filters
+      };
+
+      let response;
+      if (filters.minPrice || filters.maxPrice || filters.sortBy) {
+         response = await productsApi.searchProducts(params);
+      } else {
+         response = await productsApi.getHomepageProducts(params.page, params.limit);
+      }
+
+      if (isLoadMore) {
+        setProducts(prevProducts => [...prevProducts, ...response.data]);
+        setPage(currentPage);
+      } else {
+        setProducts(response.data);
+        setPage(1);
+      }
+
       setHasMore(response.hasMore);
-    } catch (error) {
-      console.error("Failed to fetch more data:", error);
+
+    } catch (err: any) {
+       console.error("Failed to fetch data:", err);
+       setProductsError("Could not load products. Please try again later.");
     } finally {
+      setIsProductsLoading(false);
       setIsFetchingMore(false);
     }
+  };
+
+  useEffect(() => {
+    fetchProducts(false);
+  }, [filters]);
+
+  const loadMore = () => {
+     if (isFetchingMore || !hasMore) return;
+     fetchProducts(true);
   };
 
   if (isAuthLoading) {
@@ -130,6 +150,8 @@ export const HomePage: React.FC = () => {
 
     return (
       <div className="space-y-12">
+        <ProductFilter onFilterChange={setFilters} initialFilters={filters} />
+
         {/* Brand Highlights Row */}
         <div className="flex flex-wrap justify-center gap-4 mb-10 relative z-20">
             {['Apple', 'Samsung', 'Google', 'Xiaomi', 'Oppo'].map(brand => (
