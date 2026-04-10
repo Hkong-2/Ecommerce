@@ -14,6 +14,7 @@ export const ProductDetailPage: React.FC = () => {
   const [selectedSku, setSelectedSku] = useState<SKU | null>(null);
   const [mainImage, setMainImage] = useState<string>('');
   const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
+  const [isHoveringImage, setIsHoveringImage] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -49,6 +50,25 @@ export const ProductDetailPage: React.FC = () => {
 
     fetchProduct();
   }, [slug]);
+
+  // Auto-play images
+  useEffect(() => {
+    if (!product || !product.images || product.images.length <= 1 || isHoveringImage) {
+      return;
+    }
+
+    const intervalId = setInterval(() => {
+      setMainImage(currentMainImage => {
+        const currentIndex = product.images.findIndex(img => img.imageUrl === currentMainImage);
+        if (currentIndex === -1) return product.images[0].imageUrl;
+
+        const nextIndex = (currentIndex + 1) % product.images.length;
+        return product.images[nextIndex].imageUrl;
+      });
+    }, 3000); // Change image every 3 seconds
+
+    return () => clearInterval(intervalId);
+  }, [product, isHoveringImage]);
 
   // Handle attribute selection
   const handleAttributeSelect = (key: string, value: string) => {
@@ -101,6 +121,27 @@ export const ProductDetailPage: React.FC = () => {
 
   const groupedAttributes = getGroupedAttributes();
 
+  // Check if a specific attribute value is available given other selected attributes
+  const isAttributeValueAvailable = (keyToChange: string, newValue: string) => {
+    if (!product || !product.skus) return false;
+
+    // Create a theoretical selection combining existing choices with the new one
+    const theoreticalSelection = { ...selectedAttributes, [keyToChange]: newValue };
+
+    // Check if there is ANY sku that satisfies this theoretical selection
+    // NOTE: If the user hasn't selected anything for a particular group yet, we don't enforce it.
+    // We only enforce that the currently selected items don't contradict each other.
+    return product.skus.some(sku => {
+       if (!sku.attributes) return false;
+
+       return Object.entries(theoreticalSelection).every(([k, v]) => {
+          // If the SKU doesn't have this attribute at all, we consider it a mismatch
+          if (sku.attributes[k] === undefined) return false;
+          return sku.attributes[k] === v;
+       });
+    });
+  };
+
   // Format currency
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -145,8 +186,12 @@ export const ProductDetailPage: React.FC = () => {
           <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
 
             {/* Product Images */}
-            <div className="w-full md:w-1/2">
-              <div className="aspect-square bg-white rounded-xl overflow-hidden border border-slate-100 flex items-center justify-center p-4 mb-4">
+            <div
+              className="w-full md:w-1/2"
+              onMouseEnter={() => setIsHoveringImage(true)}
+              onMouseLeave={() => setIsHoveringImage(false)}
+            >
+              <div className="aspect-square bg-white rounded-xl overflow-hidden border border-slate-100 flex items-center justify-center p-4 mb-4 transition-all duration-300">
                 {mainImage ? (
                   <img
                     src={getFullImageUrl(mainImage)}
@@ -213,14 +258,19 @@ export const ProductDetailPage: React.FC = () => {
                         <div className="flex flex-wrap gap-2">
                           {values.map((value) => {
                             const isSelected = selectedAttributes[key] === value;
+                            const isAvailable = isSelected || isAttributeValueAvailable(key, value);
+
                             return (
                               <button
                                 key={value}
                                 onClick={() => handleAttributeSelect(key, value)}
+                                disabled={!isAvailable}
                                 className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
                                   isSelected
                                     ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
-                                    : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                                    : !isAvailable
+                                      ? 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed'
+                                      : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
                                 }`}
                               >
                                 {value}
