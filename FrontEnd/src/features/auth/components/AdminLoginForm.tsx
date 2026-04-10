@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../../stores/authStore';
+import { useDispatch } from 'react-redux';
+import { setToken, setUser, setLoading } from '../../../stores/authSlice';
 import { authApi } from '../../../api/auth';
 import { EnvelopeSimple, LockKey } from '@phosphor-icons/react';
 
@@ -10,21 +11,21 @@ export const AdminLoginForm: React.FC = () => {
   const [error, setError] = useState('');
 
   const navigate = useNavigate();
-  const { setToken, setUser, setLoading } = useAuthStore();
+  const dispatch = useDispatch();
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
+    dispatch(setLoading(true));
 
     try {
       // Authenticate with admin credentials
       const { access_token } = await authApi.adminLogin({ email, password });
-      setToken(access_token);
+      dispatch(setToken(access_token));
 
       // Fetch user profile
       const user = await authApi.getProfile();
-      setUser(user);
+      dispatch(setUser(user));
 
       // Redirect to admin dashboard
       navigate('/admin/dashboard', { replace: true });
@@ -33,7 +34,7 @@ export const AdminLoginForm: React.FC = () => {
       console.error('Failed to login as admin', err);
       setError(err.response?.data?.message || 'Invalid email or password');
     } finally {
-      setLoading(false);
+      dispatch(setLoading(false));
     }
   };
 

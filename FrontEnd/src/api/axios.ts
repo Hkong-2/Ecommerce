@@ -1,5 +1,6 @@
 import axios from 'axios';
-import { useAuthStore } from '../stores/authStore';
+import { store } from '../stores/store';
+import { logout } from '../stores/authSlice';
 
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000',
@@ -9,7 +10,7 @@ export const api = axios.create({
 // Request interceptor to add the Bearer token
 api.interceptors.request.use(
   (config) => {
-    const token = useAuthStore.getState().token;
+    const token = store.getState().auth.token;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -29,7 +30,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Clear token if unauthorized, but don't force redirect on every 401
       // For instance, the initial getProfile check will return 401 if not logged in.
-      useAuthStore.getState().logout();
+      store.dispatch(logout());
 
       // If the error happens on the login or admin login route, don't redirect
       const isAuthRoute = window.location.pathname.includes('/login');

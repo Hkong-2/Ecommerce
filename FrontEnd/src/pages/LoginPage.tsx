@@ -2,40 +2,41 @@ import React, { useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { AuthLayout } from '../layouts/AuthLayout';
 import { LoginForm } from '../features/auth/components/LoginForm';
-import { useAuthStore } from '../stores/authStore';
+import { useDispatch } from 'react-redux';
+import { setToken, setUser, setLoading, logout } from '../stores/authSlice';
 import { authApi } from '../api/auth';
 
 export const LoginPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { setToken, setUser, setLoading } = useAuthStore();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const token = searchParams.get('token');
 
     const initializeAuth = async (token: string) => {
-      setLoading(true);
+      dispatch(setLoading(true));
       try {
-        setToken(token);
+        dispatch(setToken(token));
 
         // Fetch user profile with the new token
         const user = await authApi.getProfile();
-        setUser(user);
+        dispatch(setUser(user));
 
         // Redirect to home using react-router
         navigate('/', { replace: true });
       } catch (error) {
         console.error('Failed to fetch profile during login', error);
-        useAuthStore.getState().logout();
+        dispatch(logout());
       } finally {
-        setLoading(false);
+        dispatch(setLoading(false));
       }
     };
 
     if (token) {
       initializeAuth(token);
     }
-  }, [searchParams, navigate, setToken, setUser, setLoading]);
+  }, [searchParams, navigate, dispatch]);
 
   return (
     <AuthLayout>

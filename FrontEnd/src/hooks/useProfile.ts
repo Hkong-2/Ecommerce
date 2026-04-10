@@ -23,10 +23,11 @@ export interface UserProfile {
   addresses: Address[];
 }
 
-import { useAuthStore } from '../stores/authStore';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../stores/store';
 
 export const useProfile = () => {
-  const token = useAuthStore((state) => state.token);
+  const token = useSelector((state: RootState) => state.auth.token);
 
   return useQuery<UserProfile, Error>({
     queryKey: ['profile'],
