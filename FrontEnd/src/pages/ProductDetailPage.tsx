@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { productsApi } from '../api/products';
 import type { ProductDetail, SKU } from '../types/products';
 import { ChevronRight, ShoppingCart, Info } from 'lucide-react';
+import { getFullImageUrl } from '../utils/image';
 
 export const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -12,8 +13,10 @@ export const ProductDetailPage: React.FC = () => {
 
   const [selectedSku, setSelectedSku] = useState<SKU | null>(null);
   const [mainImage, setMainImage] = useState<string>('');
+  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     const fetchProduct = async () => {
       if (!slug) return;
       try {
@@ -23,7 +26,11 @@ export const ProductDetailPage: React.FC = () => {
 
         // Default to first SKU if available
         if (data.skus && data.skus.length > 0) {
-          setSelectedSku(data.skus[0]);
+          const defaultSku = data.skus[0];
+          setSelectedSku(defaultSku);
+          if (defaultSku.attributes) {
+            setSelectedAttributes(defaultSku.attributes);
+          }
         }
 
         // Default to first image
@@ -43,15 +50,56 @@ export const ProductDetailPage: React.FC = () => {
     fetchProduct();
   }, [slug]);
 
-  // Handle SKU selection
-  const handleSkuSelect = (sku: SKU) => {
-    setSelectedSku(sku);
-    // Find image associated with this SKU if any
-    const skuImage = product?.images?.find(img => img.skuId === sku.id);
-    if (skuImage) {
-      setMainImage(skuImage.imageUrl);
+  // Handle attribute selection
+  const handleAttributeSelect = (key: string, value: string) => {
+    if (!product) return;
+
+    const newSelectedAttributes = { ...selectedAttributes, [key]: value };
+    setSelectedAttributes(newSelectedAttributes);
+
+    // Find if a SKU matches the new combination
+    const matchingSku = product.skus.find(sku => {
+      if (!sku.attributes) return false;
+      return Object.entries(newSelectedAttributes).every(([k, v]) => sku.attributes[k] === v);
+    });
+
+    if (matchingSku) {
+      setSelectedSku(matchingSku);
+      const skuImage = product.images?.find(img => img.skuId === matchingSku.id);
+      if (skuImage) {
+        setMainImage(skuImage.imageUrl);
+      }
+    } else {
+      setSelectedSku(null); // No exact match found for this combination
     }
   };
+
+  // Group attributes by key
+  const getGroupedAttributes = () => {
+    if (!product || !product.skus) return {};
+
+    const groups: Record<string, Set<string>> = {};
+
+    product.skus.forEach(sku => {
+      if (sku.attributes) {
+        Object.entries(sku.attributes).forEach(([key, value]) => {
+          // Ignore 'status' or 'condition' like 'new seal' as requested by user
+          if (key.toLowerCase() === 'status' || key.toLowerCase() === 'condition' || String(value).toLowerCase().includes('new seal')) {
+             return;
+          }
+
+          if (!groups[key]) {
+            groups[key] = new Set();
+          }
+          groups[key].add(String(value));
+        });
+      }
+    });
+
+    return groups;
+  };
+
+  const groupedAttributes = getGroupedAttributes();
 
   // Format currency
   const formatCurrency = (amount: number) => {
@@ -101,7 +149,7 @@ export const ProductDetailPage: React.FC = () => {
               <div className="aspect-square bg-white rounded-xl overflow-hidden border border-slate-100 flex items-center justify-center p-4 mb-4">
                 {mainImage ? (
                   <img
-                    src={mainImage}
+                    src={getFullImageUrl(mainImage)}
                     alt={product.name}
                     className="max-w-full max-h-full object-contain"
                   />
@@ -121,7 +169,7 @@ export const ProductDetailPage: React.FC = () => {
                         mainImage === img.imageUrl ? 'border-blue-500' : 'border-slate-200 hover:border-blue-300'
                       }`}
                     >
-                      <img src={img.imageUrl} alt={img.altText || ''} className="w-full h-full object-contain" />
+                      <img src={getFullImageUrl(img.imageUrl)} alt={img.altText || ''} className="w-full h-full object-contain" />
                     </button>
                   ))}
                 </div>
@@ -152,40 +200,37 @@ export const ProductDetailPage: React.FC = () => {
                 )}
               </div>
 
-              {/* Variants / SKUs */}
-              {product.skus && product.skus.length > 0 && (
-                <div className="mb-8">
-                  <h3 className="text-sm font-medium text-slate-700 mb-3 uppercase tracking-wide">
-                    Options:
-                  </h3>
-                  <div className="flex flex-wrap gap-3">
-                    {product.skus.map((sku) => {
-                      // Extract simple display name from attributes if possible, else use skuCode
-                      let displayName = sku.skuCode;
-                      if (sku.attributes) {
-                        const attrValues = Object.values(sku.attributes);
-                        if (attrValues.length > 0) {
-                          displayName = attrValues.join(' - ');
-                        }
-                      }
-
-                      const isSelected = selectedSku?.id === sku.id;
-
-                      return (
-                        <button
-                          key={sku.id}
-                          onClick={() => handleSkuSelect(sku)}
-                          className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
-                            isSelected
-                              ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
-                              : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
-                          }`}
-                        >
-                          {displayName}
-                        </button>
-                      );
-                    })}
-                  </div>
+              {/* Variants / SKUs grouped by attributes */}
+              {Object.keys(groupedAttributes).length > 0 && (
+                <div className="mb-8 space-y-4">
+                  {Object.entries(groupedAttributes).map(([key, valuesSet]) => {
+                    const values = Array.from(valuesSet);
+                    return (
+                      <div key={key}>
+                        <h3 className="text-sm font-medium text-slate-700 mb-2 uppercase tracking-wide">
+                          {key}:
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {values.map((value) => {
+                            const isSelected = selectedAttributes[key] === value;
+                            return (
+                              <button
+                                key={value}
+                                onClick={() => handleAttributeSelect(key, value)}
+                                className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                                  isSelected
+                                    ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
+                                    : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                                }`}
+                              >
+                                {value}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
 
