@@ -22,7 +22,23 @@ const resources = {
       "privacy": "Privacy Policy",
       "auth_hero_title": "DIGIPRO",
       "auth_hero_subtitle": "Step into the future. Discover premium smartphones and elevate your tech experience.",
-      "loading": "LOADING..."
+      "loading": "LOADING...",
+      "home": {
+        "hero": {
+          "badge": "100% Genuine Guaranteed",
+          "title1": "Elevate Your",
+          "title2": "Digital Experience",
+          "subtitle": "Discover the ultimate smartphone world at DigiPro. We bring you the most powerful flagship models, beautiful designs at the best market prices.",
+          "shopNow": "Shop Now",
+          "promotions": "Promotions"
+        },
+        "products": {
+          "featured": "Featured Products",
+          "subtitle": "A collection of the most worth-buying phones.",
+          "loadMore": "Load more products",
+          "loadingMore": "Loading..."
+        }
+      }
     }
   },
   vi: {
@@ -45,7 +61,23 @@ const resources = {
       "privacy": "Chính sách Bảo mật",
       "auth_hero_title": "DIGIPRO",
       "auth_hero_subtitle": "Bước vào tương lai. Khám phá điện thoại thông minh cao cấp và nâng tầm trải nghiệm công nghệ của bạn.",
-      "loading": "ĐANG TẢI..."
+      "loading": "ĐANG TẢI...",
+      "home": {
+        "hero": {
+          "badge": "Cam kết chính hãng 100%",
+          "title1": "Nâng tầm",
+          "title2": "Trải nghiệm Số",
+          "subtitle": "Khám phá thế giới smartphone đỉnh cao tại DigiPro. Chúng tôi mang đến những dòng máy flagship mạnh mẽ nhất, thiết kế đẹp nhất với giá tốt nhất thị trường.",
+          "shopNow": "Mua sắm ngay",
+          "promotions": "Khuyến mãi"
+        },
+        "products": {
+          "featured": "Sản phẩm Nổi bật",
+          "subtitle": "Tuyển tập những chiếc điện thoại đáng mua nhất.",
+          "loadMore": "Xem thêm sản phẩm",
+          "loadingMore": "Đang tải..."
+        }
+      }
     }
   }
 };
