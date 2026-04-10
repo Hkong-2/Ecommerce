@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { AdminLoginPage } from './pages/AdminLoginPage';
 import { HomePage } from './pages/HomePage';
+import { ProductDetailPage } from './pages/ProductDetailPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import { MainLayout } from './layouts/MainLayout';
 import { AdminLayout } from './layouts/AdminLayout';
@@ -14,6 +15,7 @@ function App() {
       {/* Public & User Routes */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<HomePage />} />
+        <Route path="/product/:slug" element={<ProductDetailPage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Route>
 
