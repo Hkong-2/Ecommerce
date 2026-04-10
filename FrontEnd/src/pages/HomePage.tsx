@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { useAuthStore } from '../stores/authStore';
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../stores/store';
+import { setUser } from '../stores/authSlice';
 import { authApi } from '../api/auth';
 import { productsApi } from '../api/products';
 import type { HomepageProduct } from '../api/products';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { getFullImageUrl } from '../utils/image';
-import { Loader2, Smartphone, TrendingUp, ShieldCheck } from 'lucide-react';
+import { Loader2, Smartphone, ShieldCheck } from 'lucide-react';
 import heroPhone from '../assets/hero-phone.png';
 
 export const HomePage: React.FC = () => {
-  const { user, isAuthenticated, setUser, isLoading: isAuthLoading } = useAuthStore();
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { t } = useTranslation();
   const [products, setProducts] = useState<HomepageProduct[]>([]);
@@ -29,14 +32,14 @@ export const HomePage: React.FC = () => {
         if (isAuthenticated && !user) {
            try {
               const fetchedUser = await authApi.getProfile();
-              setUser(fetchedUser);
+              dispatch(setUser(fetchedUser));
            } catch (e) {
               console.error(e);
            }
         }
      }
      fetchProfile();
-  }, [isAuthenticated, user, setUser]);
+  }, [isAuthenticated, user, dispatch]);
 
   // Initial Fetch
   useEffect(() => {

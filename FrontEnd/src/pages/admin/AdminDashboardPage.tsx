@@ -1,8 +1,9 @@
 import React from 'react';
-import { useAuthStore } from '../../stores/authStore';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../stores/store';
 
 export const AdminDashboardPage: React.FC = () => {
-  const { user } = useAuthStore();
+  const { user } = useSelector((state: RootState) => state.auth);
 
   return (
     <div className="space-y-6">

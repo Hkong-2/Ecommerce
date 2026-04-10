@@ -1,8 +1,9 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useAuthStore } from '../../stores/authStore';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../stores/store';
 
 export const AdminProtectedRoute = () => {
-  const { isAuthenticated, user, isLoading } = useAuthStore();
+  const { isAuthenticated, user, isLoading } = useSelector((state: RootState) => state.auth);
 
   if (isLoading) {
     return (

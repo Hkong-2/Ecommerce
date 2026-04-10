@@ -1,5 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../stores/authStore';
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../../stores/store';
+import { logout } from '../../stores/authSlice';
 import { useProfile } from '../../hooks/useProfile';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Button } from '../ui/button';
@@ -19,7 +21,8 @@ import { getFullImageUrl } from '../../utils/image';
 import { CaretDownIcon } from '@radix-ui/react-icons';
 
 export function Header() {
-  const { token, logout } = useAuthStore();
+  const { token } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
   const [brands, setBrands] = useState<Brand[]>([]);
 
   useEffect(() => {
@@ -50,7 +53,7 @@ export function Header() {
   };
 
   const handleLogout = () => {
-    logout();
+    dispatch(logout());
     navigate('/');
   };
 

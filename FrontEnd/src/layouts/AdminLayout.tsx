@@ -1,14 +1,15 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../stores/authStore';
+import { useDispatch } from 'react-redux';
+import { logout } from '../stores/authSlice';
 import { Button } from '../components/ui/button';
 import { SignOut, Users, Package, ChartBar, Layout } from '@phosphor-icons/react';
 
 export function AdminLayout() {
-  const { logout } = useAuthStore();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
+    dispatch(logout());
     navigate('/admin/login');
   };
 
