@@ -4,6 +4,7 @@ import { authApi } from '../api/auth';
 import { productsApi } from '../api/products';
 import type { HomepageProduct } from '../api/products';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { getFullImageUrl } from '../utils/image';
 import { Loader2, Smartphone, TrendingUp, ShieldCheck } from 'lucide-react';
 import heroPhone from '../assets/hero-phone.png';
@@ -142,7 +143,7 @@ export const HomePage: React.FC = () => {
               const isPremium = index < 3;
 
               return (
-              <div key={product.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 relative">
+              <Link to={`/product/${product.slug}`} key={product.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 relative">
 
                 {isPremium && (
                   <div className="absolute top-4 left-4 z-20 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
@@ -187,7 +188,7 @@ export const HomePage: React.FC = () => {
                         </div>
                     </div>
                 </div>
-              </div>
+              </Link>
           )})}
 
           {/* Render extra skeletons while loading more */}

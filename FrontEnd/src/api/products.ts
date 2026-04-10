@@ -1,4 +1,5 @@
 import { api } from './axios';
+import type { ProductDetail } from '../types/products';
 
 export interface HomepageProduct {
   id: number;
@@ -20,6 +21,11 @@ export const productsApi = {
     const response = await api.get<PaginatedProductsResponse>(`/api/products/homepage`, {
       params: { page, limit }
     });
+    return response.data;
+  },
+
+  getProductBySlug: async (slug: string): Promise<ProductDetail> => {
+    const response = await api.get<ProductDetail>(`/api/products/${slug}`);
     return response.data;
   },
 };
