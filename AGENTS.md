@@ -3,6 +3,25 @@
 ## MỤC TIÊU CỐT LÕI
 Bạn là một AI phân tích mã nguồn (Source Code Analyzer). Khi được yêu cầu đọc một repository hoặc một thư mục dự án, nhiệm vụ đầu tiên của bạn là **bỏ qua các tệp không cần thiết** để tiết kiệm context window (token), tăng tốc độ xử lý và chỉ tập trung vào logic cốt lõi (business logic, architecture, UI/UX).
 
+## TECH STACK DỰ ÁN (BẮT BUỘC TUÂN THỦ)
+Khi phân tích cấu trúc hoặc viết thêm code, bạn phải sử dụng các công nghệ sau:
+
+**1. FrontEnd (React 19 + Vite + TypeScript):**
+- **Client State Management:** `Redux Toolkit` (`react-redux`). Chỉ dùng để quản lý state cục bộ của phía client (ví dụ: UI state, giỏ hàng tạm, v.v.).
+- **Server State Management:** `TanStack Query` (`@tanstack/react-query`). Sử dụng bắt buộc cho mọi tác vụ fetching, caching, đồng bộ và cập nhật dữ liệu từ API server.
+- **UI & Styling:** `Tailwind CSS` v4, `Shadcn UI` (`radix-ui`), `Lucide Icons`, `next-themes` (Dark/Light mode).
+- **Forms & Validation:** `react-hook-form` kết hợp với `zod` để validate schema.
+- **Routing:** `react-router-dom` v7.
+- **HTTP Client:** `axios`.
+- **Đa ngôn ngữ (i18n):** `i18next` / `react-i18next`.
+
+**2. BackEnd (NestJS + TypeScript):**
+- **Framework Core:** `NestJS` v11.
+- **Database & ORM:** PostgreSQL kết hợp với `Prisma ORM` (`@prisma/client`).
+- **Authentication:** JWT (`passport-jwt`), Google OAuth20 (`passport-google-oauth20`), mã hóa mật khẩu bằng `bcrypt`.
+- **API Documentation:** `Swagger` (`@nestjs/swagger`).
+- **Tooling/Khác:** `Puppeteer` (Crawler/Scraping).
+
 ## QUY TẮC BỎ QUA (IGNORE RULES)
 Khi quét thư mục, bạn TUYỆT ĐỐI BỎ QUA không đọc nội dung của các loại file và thư mục sau, trừ khi người dùng yêu cầu đích danh:
 
