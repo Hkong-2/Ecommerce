@@ -16,10 +16,27 @@ export interface PaginatedProductsResponse {
   hasMore: boolean;
 }
 
+export interface SearchProductsParams {
+  q?: string;
+  brandId?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  sortBy?: string;
+  page?: number;
+  limit?: number;
+}
+
 export const productsApi = {
   getHomepageProducts: async (page: number = 1, limit: number = 6): Promise<PaginatedProductsResponse> => {
     const response = await api.get<PaginatedProductsResponse>(`/api/products/homepage`, {
       params: { page, limit }
+    });
+    return response.data;
+  },
+
+  searchProducts: async (params: SearchProductsParams): Promise<PaginatedProductsResponse> => {
+    const response = await api.get<PaginatedProductsResponse>(`/api/products/search`, {
+      params
     });
     return response.data;
   },

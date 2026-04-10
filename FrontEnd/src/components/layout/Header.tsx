@@ -62,6 +62,15 @@ export function Header() {
     i18n.changeLanguage(newLang);
   };
 
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
   return (
     <header className="bg-white border-b sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
@@ -81,7 +90,7 @@ export function Header() {
             <DropdownMenuContent align="start" className="w-56 p-2 bg-white rounded-xl shadow-xl border border-slate-100">
               {brands.map(brand => (
                 <DropdownMenuItem key={brand.id} asChild className="rounded-lg cursor-pointer focus:bg-slate-50 mb-1 last:mb-0">
-                  <Link to={`#`} className="flex items-center gap-3 py-2 px-3">
+                  <Link to={`/brand/${brand.id}`} className="flex items-center gap-3 py-2 px-3">
                     {brand.logoUrl ? (
                        <img src={getFullImageUrl(brand.logoUrl)} alt={brand.name} className="w-6 h-6 object-contain" />
                     ) : (
@@ -98,19 +107,21 @@ export function Header() {
           </DropdownMenu>
         </div>
 
-        {/* Search Bar - Placeholder */}
-        <div className="hidden md:flex flex-1 max-w-md mx-8 relative">
+        {/* Search Bar */}
+        <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-md mx-8 relative">
           <input
             type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('search_placeholder')}
             className="w-full px-4 py-2 border rounded-full bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm transition-all"
           />
-          <button className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </button>
-        </div>
+        </form>
 
         {/* Actions */}
         <div className="flex items-center gap-4">
