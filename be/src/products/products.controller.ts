@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Query,
+  Param,
   DefaultValuePipe,
   ParseIntPipe,
 } from '@nestjs/common';
@@ -17,5 +18,10 @@ export class ProductsController {
     @Query('limit', new DefaultValuePipe(6), ParseIntPipe) limit: number,
   ) {
     return this.productsService.getHomepageProducts(page, limit);
+  }
+
+  @Get(':slug')
+  async getProductBySlug(@Param('slug') slug: string) {
+    return this.productsService.getProductBySlug(slug);
   }
 }
