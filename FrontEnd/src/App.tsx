@@ -11,6 +11,8 @@ import { MainLayout } from './layouts/MainLayout';
 import { AdminLayout } from './layouts/AdminLayout';
 import { AdminProtectedRoute } from './components/layout/AdminProtectedRoute';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
+import { CheckoutPage } from './pages/checkout/CheckoutPage';
+import { OrderDetailPage } from './pages/order/OrderDetailPage';
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
         <Route path="/brand/:id" element={<BrandPage />} />
         <Route path="/product/:slug" element={<ProductDetailPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/order/:id" element={<OrderDetailPage />} />
         <Route path="/cart" element={<CartPage />} />
       </Route>
 

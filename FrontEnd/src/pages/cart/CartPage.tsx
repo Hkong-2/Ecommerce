@@ -21,7 +21,7 @@ export const CartPage: React.FC = () => {
   // Dialog states
   const [itemToRemove, setItemToRemove] = useState<number | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-  const [showCheckoutDialog, setShowCheckoutDialog] = useState(false);
+  const [selectedItems, setSelectedItems] = useState<number[]>([]);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -64,8 +64,33 @@ export const CartPage: React.FC = () => {
     }).format(amount);
   };
 
+  const handleSelectItem = (cartItemId: number) => {
+    setSelectedItems((prev) =>
+      prev.includes(cartItemId)
+        ? prev.filter((id) => id !== cartItemId)
+        : [...prev, cartItemId]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (cartItems && selectedItems.length === cartItems.length) {
+      setSelectedItems([]);
+    } else if (cartItems) {
+      setSelectedItems(cartItems.map((item) => item.id));
+    }
+  };
+
   const calculateTotal = () => {
-    return cartItems?.reduce((total, item) => total + item.sku.price * item.quantity, 0) || 0;
+    if (!cartItems) return 0;
+    return cartItems
+      .filter((item) => selectedItems.includes(item.id))
+      .reduce((total, item) => total + item.sku.price * item.quantity, 0);
+  };
+
+  const handleCheckout = () => {
+    if (selectedItems.length > 0) {
+      navigate('/checkout', { state: { selectedCartItemIds: selectedItems } });
+    }
   };
 
   const formatAttributes = (attributes: Record<string, any>) => {
@@ -115,9 +140,17 @@ export const CartPage: React.FC = () => {
             <div className="flex-1">
               <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                 <div className="p-4 md:p-6 border-b flex justify-between items-center bg-slate-50/50">
-                  <span className="font-semibold text-slate-700">
-                    Bạn đang có {cartItems.length} sản phẩm trong giỏ hàng
-                  </span>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={cartItems.length > 0 && selectedItems.length === cartItems.length}
+                      onChange={handleSelectAll}
+                      className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <span className="font-semibold text-slate-700">
+                      Chọn tất cả ({cartItems.length} sản phẩm)
+                    </span>
+                  </label>
                   <button
                     onClick={handleClearCart}
                     disabled={clearCartMutation.isPending || cartItems.length === 0}
@@ -130,7 +163,16 @@ export const CartPage: React.FC = () => {
 
                 <div className="divide-y divide-slate-100">
                   {cartItems.map((item) => (
-                    <div key={item.id} className="p-4 md:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 hover:bg-slate-50/50 transition-colors">
+                    <div key={item.id} className="p-4 md:p-6 flex flex-col sm:flex-row gap-4 sm:gap-6 hover:bg-slate-50/50 transition-colors items-center sm:items-start">
+                      {/* Checkbox */}
+                      <div className="flex items-center sm:mt-12">
+                        <input
+                          type="checkbox"
+                          checked={selectedItems.includes(item.id)}
+                          onChange={() => handleSelectItem(item.id)}
+                          className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                        />
+                      </div>
                       {/* Image */}
                       <Link to={`/product/${item.product.slug}`} className="shrink-0 mx-auto sm:mx-0">
                         <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-xl bg-white border border-slate-100 flex items-center justify-center p-2">
@@ -225,7 +267,7 @@ export const CartPage: React.FC = () => {
 
                 <div className="space-y-3 text-sm mb-6">
                   <div className="flex justify-between text-slate-600">
-                    <span>Tạm tính ({cartItems.length} sản phẩm)</span>
+                    <span>Tạm tính ({selectedItems.length} sản phẩm)</span>
                     <span className="font-medium text-slate-800">{formatCurrency(calculateTotal())}</span>
                   </div>
                   <div className="flex justify-between text-slate-600 pb-4 border-b">
@@ -243,8 +285,9 @@ export const CartPage: React.FC = () => {
 
                 <Button
                   size="lg"
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm mb-3"
-                  onClick={() => setShowCheckoutDialog(true)}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm mb-3 disabled:opacity-50"
+                  disabled={selectedItems.length === 0}
+                  onClick={handleCheckout}
                 >
                   Tiến hành thanh toán
                 </Button>
@@ -302,22 +345,6 @@ export const CartPage: React.FC = () => {
           </DialogContent>
         </Dialog>
 
-        {/* Checkout Placeholder Dialog */}
-        <Dialog open={showCheckoutDialog} onOpenChange={setShowCheckoutDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Tính năng đang phát triển</DialogTitle>
-              <DialogDescription>
-                Chức năng thanh toán sẽ sớm được cập nhật. Cảm ơn bạn đã đồng hành cùng chúng tôi!
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="mt-4">
-              <Button onClick={() => setShowCheckoutDialog(false)}>
-                Đã hiểu
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
       </div>
     </div>

@@ -13,6 +13,18 @@ export interface CreateAddressData {
 
 export interface UpdateAddressData extends Partial<CreateAddressData> {}
 
+import { useQuery } from '@tanstack/react-query';
+
+export const useAddressesQuery = () => {
+  return useQuery({
+    queryKey: ['addresses'],
+    queryFn: async () => {
+      const response = await api.get('/users/me/addresses');
+      return response.data;
+    },
+  });
+};
+
 export const useAddAddress = () => {
   const queryClient = useQueryClient();
 
