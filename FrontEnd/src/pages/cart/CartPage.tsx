@@ -6,6 +6,8 @@ import { useCartQuery, useUpdateCartItemMutation, useRemoveCartItemMutation, use
 import { getFullImageUrl } from '../../utils/image';
 import { Trash2, Plus, Minus, ShoppingBag, ChevronRight, AlertCircle } from 'lucide-react';
 import { Button } from '../../components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../components/ui/dialog';
+import { useState } from 'react';
 
 export const CartPage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,6 +17,11 @@ export const CartPage: React.FC = () => {
   const updateItemMutation = useUpdateCartItemMutation();
   const removeItemMutation = useRemoveCartItemMutation();
   const clearCartMutation = useClearCartMutation();
+
+  // Dialog states
+  const [itemToRemove, setItemToRemove] = useState<number | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [showCheckoutDialog, setShowCheckoutDialog] = useState(false);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -31,15 +38,23 @@ export const CartPage: React.FC = () => {
   };
 
   const handleRemove = (skuId: number) => {
-    if (window.confirm('Bạn có chắc muốn xóa sản phẩm này khỏi giỏ hàng?')) {
-      removeItemMutation.mutate(skuId);
+    setItemToRemove(skuId);
+  };
+
+  const confirmRemoveItem = () => {
+    if (itemToRemove !== null) {
+      removeItemMutation.mutate(itemToRemove);
+      setItemToRemove(null);
     }
   };
 
   const handleClearCart = () => {
-    if (window.confirm('Bạn có chắc muốn xóa TOÀN BỘ giỏ hàng?')) {
-      clearCartMutation.mutate();
-    }
+    setShowClearConfirm(true);
+  };
+
+  const confirmClearCart = () => {
+    clearCartMutation.mutate();
+    setShowClearConfirm(false);
   };
 
   const formatCurrency = (amount: number) => {
@@ -105,8 +120,8 @@ export const CartPage: React.FC = () => {
                   </span>
                   <button
                     onClick={handleClearCart}
-                    disabled={clearCartMutation.isPending}
-                    className="text-sm text-slate-500 hover:text-red-600 flex items-center gap-1 transition-colors"
+                    disabled={clearCartMutation.isPending || cartItems.length === 0}
+                    className="text-sm text-slate-500 hover:text-red-600 flex items-center gap-1 transition-colors disabled:opacity-50"
                   >
                     <Trash2 className="w-4 h-4" />
                     <span className="hidden sm:inline">Xóa tất cả</span>
@@ -229,7 +244,7 @@ export const CartPage: React.FC = () => {
                 <Button
                   size="lg"
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm mb-3"
-                  onClick={() => alert("Chức năng thanh toán sẽ được cập nhật sau.")}
+                  onClick={() => setShowCheckoutDialog(true)}
                 >
                   Tiến hành thanh toán
                 </Button>
@@ -246,6 +261,64 @@ export const CartPage: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Remove Single Item Confirm Dialog */}
+        <Dialog open={itemToRemove !== null} onOpenChange={(open) => !open && setItemToRemove(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Xóa sản phẩm</DialogTitle>
+              <DialogDescription>
+                Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => setItemToRemove(null)}>
+                Hủy bỏ
+              </Button>
+              <Button variant="destructive" onClick={confirmRemoveItem}>
+                Xóa
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Clear All Confirm Dialog */}
+        <Dialog open={showClearConfirm} onOpenChange={setShowClearConfirm}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Xóa toàn bộ giỏ hàng</DialogTitle>
+              <DialogDescription>
+                Bạn có chắc chắn muốn xóa TẤT CẢ sản phẩm khỏi giỏ hàng? Hành động này không thể hoàn tác.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => setShowClearConfirm(false)}>
+                Hủy bỏ
+              </Button>
+              <Button variant="destructive" onClick={confirmClearCart}>
+                Xóa tất cả
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Checkout Placeholder Dialog */}
+        <Dialog open={showCheckoutDialog} onOpenChange={setShowCheckoutDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Tính năng đang phát triển</DialogTitle>
+              <DialogDescription>
+                Chức năng thanh toán sẽ sớm được cập nhật. Cảm ơn bạn đã đồng hành cùng chúng tôi!
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="mt-4">
+              <Button onClick={() => setShowCheckoutDialog(false)}>
+                Đã hiểu
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
       </div>
     </div>
   );

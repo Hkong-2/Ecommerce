@@ -24,6 +24,7 @@ export const ProductDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [showAttributesDialog, setShowAttributesDialog] = useState(false);
 
   const addToCartMutation = useAddToCartMutation();
 
@@ -326,7 +327,7 @@ export const ProductDetailPage: React.FC = () => {
                       return;
                     }
                     if (!selectedSku) {
-                       alert('Vui lòng chọn đầy đủ thuộc tính sản phẩm');
+                       setShowAttributesDialog(true);
                        return;
                     }
 
@@ -362,6 +363,23 @@ export const ProductDetailPage: React.FC = () => {
                     </Button>
                     <Button onClick={() => navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`)}>
                       Đăng nhập ngay
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+              {/* Attributes Dialog */}
+              <Dialog open={showAttributesDialog} onOpenChange={setShowAttributesDialog}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="text-lg">Vui lòng chọn thuộc tính</DialogTitle>
+                    <DialogDescription className="text-sm">
+                      Bạn cần chọn đầy đủ các thuộc tính của sản phẩm (ví dụ: màu sắc, dung lượng...) trước khi thêm vào giỏ hàng.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter className="mt-4">
+                    <Button onClick={() => setShowAttributesDialog(false)}>
+                      Đã hiểu
                     </Button>
                   </DialogFooter>
                 </DialogContent>
