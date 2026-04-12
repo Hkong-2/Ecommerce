@@ -3,6 +3,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../stores/store';
 import { logout } from '../../stores/authSlice';
 import { useProfile } from '../../hooks/useProfile';
+import { useCartQuery, cartKeys } from '../../hooks/useCart';
+import { toggleCartDrawer } from '../../stores/cartSlice';
+import { useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Button } from '../ui/button';
 import {
@@ -39,7 +42,10 @@ export function Header() {
 
   const navigate = useNavigate();
   const { data: profile } = useProfile();
+  const { data: cartItems } = useCartQuery(!!token);
+  const cartItemCount = cartItems?.reduce((total, item) => total + item.quantity, 0) || 0;
   const { t, i18n } = useTranslation();
+  const queryClient = useQueryClient();
 
   // Get initials for avatar fallback
   const getInitials = (name?: string) => {
@@ -54,6 +60,7 @@ export function Header() {
 
   const handleLogout = () => {
     dispatch(logout());
+    queryClient.removeQueries({ queryKey: cartKeys.all }); // Clear cart data immediately
     navigate('/');
   };
 
@@ -134,13 +141,18 @@ export function Header() {
           </button>
 
           {/* Cart Placeholder */}
-          <button className="p-2 hover:bg-slate-100 rounded-full relative transition-colors">
+          <button
+            onClick={() => dispatch(toggleCartDrawer())}
+            className="p-2 hover:bg-slate-100 rounded-full relative transition-colors"
+          >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
-              0
-            </span>
+            {cartItemCount > 0 && (
+              <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold h-4 w-4 rounded-full flex items-center justify-center">
+                {cartItemCount > 99 ? '99+' : cartItemCount}
+              </span>
+            )}
           </button>
 
           {/* User Auth/Avatar will go here */}

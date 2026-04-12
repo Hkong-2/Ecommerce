@@ -15,6 +15,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       clientSecret: configService.get<string>('GOOGLE_CLIENT_SECRET') || '',
       callbackURL: configService.get<string>('GOOGLE_CALLBACK_URL') || '',
       scope: ['email', 'profile'], // Các thông tin yêu cầu truy cập
+      passReqToCallback: true,
     });
   }
 
@@ -26,6 +27,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
    * @param done Hàm callback hoàn thành logic
    */
   async validate(
+    request: any,
     accessToken: string,
     refreshToken: string,
     profile: any,

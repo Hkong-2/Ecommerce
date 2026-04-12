@@ -11,6 +11,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import type { Request, Response } from 'express';
 import { AdminLoginDto } from './dto/admin-login.dto';
+import { GoogleOAuthGuard } from './guards/google-oauth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -21,10 +22,11 @@ export class AuthController {
    * Sử dụng GoogleStrategy qua AuthGuard('google') để chuyển hướng người dùng sang trang Google Login.
    */
   @Get('google')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleOAuthGuard)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   googleAuth(@Req() req: Request) {
     // Controller rỗng vì Guards sẽ chặn và tự động chuyển hướng tới URL Google Auth API
+    // Tham số state từ query string được GoogleStrategy (nếu cấu hình) truyền tiếp sang Google
   }
 
   /**
@@ -34,15 +36,21 @@ export class AuthController {
    * Dưới đây là cách trả về thông qua Redirect, bạn có thể chỉnh lại thành trả JSON tùy yêu cầu client (SPA hay web server rendered)
    */
   @Get('google/callback')
-  @UseGuards(AuthGuard('google')) // Check lại một lần nữa đảm bảo profile đã validate từ GoogleStrategy
+  @UseGuards(GoogleOAuthGuard) // Check lại một lần nữa đảm bảo profile đã validate từ GoogleStrategy
   googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
     // req.user được Inject từ hàm validate() bên GoogleStrategy
     const loginResult = this.authService.login(req.user);
 
+    // Lấy state từ query param (nếu có, ví dụ do frontend truyền lên để redirect lại)
+    const state = req.query.state as string;
+    let redirectUrl = `http://localhost:5173/login?token=${loginResult.access_token}`;
+
+    if (state) {
+      redirectUrl += `&redirect=${encodeURIComponent(state)}`;
+    }
+
     // Redirect người dùng tới Frontend URI, kèm theo JWT ở param
-    return res.redirect(
-      `http://localhost:5173/login?token=${loginResult.access_token}`,
-    );
+    return res.redirect(redirectUrl);
   }
 
   /**

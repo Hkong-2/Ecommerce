@@ -6,6 +6,7 @@ import { SearchPage } from './pages/SearchPage';
 import { BrandPage } from './pages/BrandPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import ProfilePage from './pages/profile/ProfilePage';
+import { CartPage } from './pages/cart/CartPage';
 import { MainLayout } from './layouts/MainLayout';
 import { AdminLayout } from './layouts/AdminLayout';
 import { AdminProtectedRoute } from './components/layout/AdminProtectedRoute';
@@ -21,6 +22,7 @@ function App() {
         <Route path="/brand/:id" element={<BrandPage />} />
         <Route path="/product/:slug" element={<ProductDetailPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/cart" element={<CartPage />} />
       </Route>
 
       {/* Auth Routes */}

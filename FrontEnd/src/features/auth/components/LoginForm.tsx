@@ -6,8 +6,16 @@ export const LoginForm: React.FC = () => {
   const { t } = useTranslation();
 
   const handleGoogleLogin = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const redirectUrl = urlParams.get('redirect');
+
     // Redirect to the backend Google Auth endpoint
-    window.location.href = 'http://localhost:3000/auth/google';
+    let googleAuthUrl = 'http://localhost:3000/auth/google';
+    if (redirectUrl) {
+        googleAuthUrl += `?state=${encodeURIComponent(redirectUrl)}`;
+    }
+
+    window.location.href = googleAuthUrl;
   };
 
   return (

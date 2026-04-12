@@ -48,7 +48,7 @@ const resources = {
       "login": "Đăng nhập",
       "my_profile": "Hồ sơ của tôi",
       "my_orders": "Đơn hàng của tôi",
-      "logout": "Đăng xuất",
+      "logout": "Đăng xuất", 
       "hero_title": "Trải nghiệm",
       "hero_title_highlight": "Tương lai.",
       "hero_subtitle": "Khám phá những mẫu điện thoại thông minh mới nhất và tốt nhất dành cho bạn.",

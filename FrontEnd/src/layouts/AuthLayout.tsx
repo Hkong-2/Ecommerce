@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
 export const AuthLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { t } = useTranslation();
@@ -18,9 +19,12 @@ export const AuthLayout: React.FC<{ children: React.ReactNode }> = ({ children }
         </div>
 
         <div className="relative z-10 space-y-6 text-center">
-          <h1 className="text-6xl font-black tracking-tighter uppercase mb-4 drop-shadow-lg text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
-            {t('auth_hero_title')}
-          </h1>
+          <Link to="/">
+            <h1 className="text-6xl font-black tracking-tighter uppercase mb-4 drop-shadow-lg text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">
+              {t('auth_hero_title')}
+            </h1>
+          </Link>
+
           <p className="text-xl font-light tracking-wide max-w-md mx-auto leading-relaxed text-slate-300">
             {t('auth_hero_subtitle')}
           </p>

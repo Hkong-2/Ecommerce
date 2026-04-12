@@ -12,10 +12,12 @@ import {
 import storage from 'redux-persist/lib/storage';
 import uiReducer from './uiSlice';
 import authReducer from './authSlice';
+import cartReducer from './cartSlice';
 
 const rootReducer = combineReducers({
   ui: uiReducer,
   auth: authReducer,
+  cart: cartReducer,
 });
 
 const persistConfig = {
