@@ -193,9 +193,9 @@ export class ProductsService {
     if (sortBy === 'newest') {
       orderBy = { createdAt: 'desc' };
     } else if (sortBy === 'price_asc') {
-       orderBy = { id: 'asc' }; // fallback for prisma query
+      orderBy = { id: 'asc' }; // fallback for prisma query
     } else if (sortBy === 'price_desc') {
-       orderBy = { id: 'asc' }; // fallback for prisma query
+      orderBy = { id: 'asc' }; // fallback for prisma query
     }
 
     const startIndex = (page - 1) * limit;
@@ -214,12 +214,14 @@ export class ProductsService {
         // For a production app, we should add a `lowestPrice` cache column on Product.
         // For now, if we are sorting by price, we have to fetch all, sort, then paginate (Not ideal, but functional for small dataset).
         // If not sorting by price, we paginate at DB level.
-        ...(sortBy === 'price_asc' || sortBy === 'price_desc' ? {} : { skip: startIndex, take: limit })
+        ...(sortBy === 'price_asc' || sortBy === 'price_desc'
+          ? {}
+          : { skip: startIndex, take: limit }),
       }),
     ]);
 
     // Map to frontend structure
-    let mappedProducts = products.map((product) => {
+    const mappedProducts = products.map((product) => {
       const lowestPrice =
         product.skus.length > 0
           ? Math.min(...product.skus.map((sku) => Number(sku.price)))
@@ -249,7 +251,7 @@ export class ProductsService {
       paginatedData = mappedProducts.slice(startIndex, endIndex);
       hasMore = endIndex < mappedProducts.length;
     } else {
-       hasMore = total > startIndex + limit;
+      hasMore = total > startIndex + limit;
     }
 
     return {

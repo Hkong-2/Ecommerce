@@ -23,8 +23,11 @@ export const LoginPage: React.FC = () => {
         const user = await authApi.getProfile();
         dispatch(setUser(user));
 
-        // Redirect to home using react-router
-        navigate('/', { replace: true });
+        // Get redirect path or default to '/'
+        const redirectPath = searchParams.get('redirect') || '/';
+
+        // Redirect to the originally requested page
+        navigate(redirectPath, { replace: true });
       } catch (error) {
         console.error('Failed to fetch profile during login', error);
         dispatch(logout());

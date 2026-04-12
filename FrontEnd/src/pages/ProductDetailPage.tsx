@@ -4,12 +4,28 @@ import { productsApi } from '../api/products';
 import type { ProductDetail, SKU } from '../types/products';
 import { ChevronRight, ShoppingCart, Info } from 'lucide-react';
 import { getFullImageUrl } from '../utils/image';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
+import { Button } from '../components/ui/button';
+import { useSelector, useDispatch } from 'react-redux';
+import type { RootState } from '../stores/store';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAddToCartMutation } from '../hooks/useCart';
+import { setCartDrawerOpen } from '../stores/cartSlice';
 
 export const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const [product, setProduct] = useState<ProductDetail | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Auth state
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+
+  const addToCartMutation = useAddToCartMutation();
 
   const [selectedSku, setSelectedSku] = useState<SKU | null>(null);
   const [mainImage, setMainImage] = useState<string>('');
@@ -303,13 +319,53 @@ export const ProductDetailPage: React.FC = () => {
               {/* Action Buttons */}
               <div className="mt-auto pt-6 border-t border-slate-100 flex gap-4">
                 <button
-                  onClick={() => alert('Add to cart clicked! Logic will be implemented later.')}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm"
+                  disabled={addToCartMutation.isPending}
+                  onClick={() => {
+                    if (!isAuthenticated) {
+                      setShowLoginDialog(true);
+                      return;
+                    }
+                    if (!selectedSku) {
+                       alert('Vui lòng chọn đầy đủ thuộc tính sản phẩm');
+                       return;
+                    }
+
+                    addToCartMutation.mutate(
+                      { skuId: selectedSku.id, quantity: 1 },
+                      {
+                        onSuccess: () => {
+                           // Open cart drawer on success
+                           dispatch(setCartDrawerOpen(true));
+                        }
+                      }
+                    );
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-sm disabled:opacity-70"
                 >
                   <ShoppingCart className="w-5 h-5" />
-                  Add to Cart
+                  {addToCartMutation.isPending ? 'Đang thêm...' : 'Thêm vào giỏ'}
                 </button>
               </div>
+
+              {/* Login Dialog */}
+              <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle className="text-lg">Yêu cầu đăng nhập</DialogTitle>
+                    <DialogDescription className="text-sm">
+                      Bạn cần đăng nhập để thêm sản phẩm này vào giỏ hàng. Vui lòng đăng nhập để tiếp tục.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <DialogFooter className="mt-4">
+                    <Button variant="outline" onClick={() => setShowLoginDialog(false)}>
+                      Hủy bỏ
+                    </Button>
+                    <Button onClick={() => navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`)}>
+                      Đăng nhập ngay
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
 
               {/* Short Description */}
               <div className="mt-8">

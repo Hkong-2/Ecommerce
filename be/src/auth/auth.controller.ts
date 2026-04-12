@@ -25,6 +25,7 @@ export class AuthController {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   googleAuth(@Req() req: Request) {
     // Controller rỗng vì Guards sẽ chặn và tự động chuyển hướng tới URL Google Auth API
+    // Tham số state từ query string được GoogleStrategy (nếu cấu hình) truyền tiếp sang Google
   }
 
   /**
@@ -39,10 +40,16 @@ export class AuthController {
     // req.user được Inject từ hàm validate() bên GoogleStrategy
     const loginResult = this.authService.login(req.user);
 
+    // Lấy state từ query param (nếu có, ví dụ do frontend truyền lên để redirect lại)
+    const state = req.query.state as string;
+    let redirectUrl = `http://localhost:5173/login?token=${loginResult.access_token}`;
+
+    if (state) {
+      redirectUrl += `&redirect=${encodeURIComponent(state)}`;
+    }
+
     // Redirect người dùng tới Frontend URI, kèm theo JWT ở param
-    return res.redirect(
-      `http://localhost:5173/login?token=${loginResult.access_token}`,
-    );
+    return res.redirect(redirectUrl);
   }
 
   /**
