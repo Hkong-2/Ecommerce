@@ -3,8 +3,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../stores/store';
 import { logout } from '../../stores/authSlice';
 import { useProfile } from '../../hooks/useProfile';
-import { useCartQuery } from '../../hooks/useCart';
+import { useCartQuery, cartKeys } from '../../hooks/useCart';
 import { toggleCartDrawer } from '../../stores/cartSlice';
+import { useQueryClient } from '@tanstack/react-query';
 import { Avatar, AvatarFallback } from '../ui/avatar';
 import { Button } from '../ui/button';
 import {
@@ -44,6 +45,7 @@ export function Header() {
   const { data: cartItems } = useCartQuery(!!token);
   const cartItemCount = cartItems?.reduce((total, item) => total + item.quantity, 0) || 0;
   const { t, i18n } = useTranslation();
+  const queryClient = useQueryClient();
 
   // Get initials for avatar fallback
   const getInitials = (name?: string) => {
@@ -58,6 +60,7 @@ export function Header() {
 
   const handleLogout = () => {
     dispatch(logout());
+    queryClient.removeQueries({ queryKey: cartKeys.all }); // Clear cart data immediately
     navigate('/');
   };
 
