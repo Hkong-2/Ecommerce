@@ -21,8 +21,6 @@ export const CartPage: React.FC = () => {
   // Dialog states
   const [itemToRemove, setItemToRemove] = useState<number | null>(null);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-  const [showCheckoutDialog, setShowCheckoutDialog] = useState(false);
-
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!isAuthenticated) {
@@ -244,9 +242,10 @@ export const CartPage: React.FC = () => {
                 <Button
                   size="lg"
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm mb-3"
-                  onClick={() => setShowCheckoutDialog(true)}
+                  asChild
+                  disabled={cartItems.length === 0}
                 >
-                  Tiến hành thanh toán
+                  <Link to="/checkout">Tiến hành thanh toán</Link>
                 </Button>
 
                 <Button
@@ -297,23 +296,6 @@ export const CartPage: React.FC = () => {
               </Button>
               <Button variant="destructive" onClick={confirmClearCart}>
                 Xóa tất cả
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Checkout Placeholder Dialog */}
-        <Dialog open={showCheckoutDialog} onOpenChange={setShowCheckoutDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Tính năng đang phát triển</DialogTitle>
-              <DialogDescription>
-                Chức năng thanh toán sẽ sớm được cập nhật. Cảm ơn bạn đã đồng hành cùng chúng tôi!
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="mt-4">
-              <Button onClick={() => setShowCheckoutDialog(false)}>
-                Đã hiểu
               </Button>
             </DialogFooter>
           </DialogContent>
