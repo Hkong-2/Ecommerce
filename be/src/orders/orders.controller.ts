@@ -25,9 +25,9 @@ export class OrdersController {
   @ApiOperation({ summary: 'Create a new order' })
   async createOrder(
     @Body() body: { addressId: number; paymentMethod: string },
-    @Req() req: { user: { id: number } },
+    @Req() req: { user: { userId: number } },
   ) {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     // Log addressId and userId for debugging
     console.log(
       `Creating order for userId: ${userId}, addressId: ${body.addressId}`,
