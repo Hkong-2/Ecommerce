@@ -84,8 +84,12 @@ export class OrdersService {
       where: { id: addressId },
     });
 
-    if (!address || address.userId !== userId) {
-      throw new BadRequestException('Địa chỉ không hợp lệ');
+    if (!address) {
+      throw new BadRequestException(`Không tìm thấy địa chỉ có ID = ${addressId}`);
+    }
+
+    if (address.userId !== userId) {
+      throw new BadRequestException(`Địa chỉ ${addressId} không thuộc về User ${userId}`);
     }
 
     // 3. Calculate totals
@@ -128,8 +132,8 @@ export class OrdersService {
               quantity: item.quantity,
               productNameSnapshot: item.sku.product.name,
               skuAttributesSnapshot: item.sku.attributes
-                ? (item.sku.attributes as Record<string, unknown>)
-                : null,
+                ? (item.sku.attributes as any)
+                : undefined,
               unitPrice: item.sku.price,
               finalPrice: item.sku.price,
               discountAmount: 0,

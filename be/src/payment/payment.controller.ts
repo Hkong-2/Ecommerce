@@ -11,7 +11,7 @@ export class PaymentController {
   @Get('vnpay-return')
   async vnpayReturn(@Req() req: Request) {
     // VNPay returns data through GET params, Frontend will pass them here
-    const vnp_Params = req.query;
+    const vnp_Params = req.query as Record<string, string>;
     const result = await this.paymentService.handleVnpayReturn(vnp_Params);
     return result;
   }

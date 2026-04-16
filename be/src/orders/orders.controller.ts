@@ -28,9 +28,11 @@ export class OrdersController {
     @Req() req: { user: { id: number } },
   ) {
     const userId = req.user.id;
+    // Log addressId and userId for debugging
+    console.log(`Creating order for userId: ${userId}, addressId: ${body.addressId}`);
     return this.ordersService.createOrder(
       userId,
-      body.addressId,
+      Number(body.addressId),
       body.paymentMethod,
     );
   }
