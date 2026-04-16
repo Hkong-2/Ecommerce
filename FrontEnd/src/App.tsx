@@ -7,6 +7,9 @@ import { BrandPage } from './pages/BrandPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import { CartPage } from './pages/cart/CartPage';
+import { CheckoutPage } from './pages/checkout/CheckoutPage';
+import { VnPayMockPage } from './pages/checkout/VnPayMockPage';
+import { OrderSuccessPage } from './pages/checkout/OrderSuccessPage';
 import { MainLayout } from './layouts/MainLayout';
 import { AdminLayout } from './layouts/AdminLayout';
 import { AdminProtectedRoute } from './components/layout/AdminProtectedRoute';
@@ -23,7 +26,11 @@ function App() {
         <Route path="/product/:slug" element={<ProductDetailPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/order/success" element={<OrderSuccessPage />} />
       </Route>
+
+      <Route path="/vnpay-mock" element={<VnPayMockPage />} />
 
       {/* Auth Routes */}
       <Route path="/login" element={<LoginPage />} />
