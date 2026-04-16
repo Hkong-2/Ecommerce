@@ -85,11 +85,15 @@ export class OrdersService {
     });
 
     if (!address) {
-      throw new BadRequestException(`Không tìm thấy địa chỉ có ID = ${addressId}`);
+      throw new BadRequestException(
+        `Không tìm thấy địa chỉ có ID = ${addressId}`,
+      );
     }
 
     if (address.userId !== userId) {
-      throw new BadRequestException(`Địa chỉ ${addressId} không thuộc về User ${userId}`);
+      throw new BadRequestException(
+        `Địa chỉ ${addressId} không thuộc về User ${userId}`,
+      );
     }
 
     // 3. Calculate totals
@@ -131,6 +135,7 @@ export class OrdersService {
               skuId: item.skuId,
               quantity: item.quantity,
               productNameSnapshot: item.sku.product.name,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               skuAttributesSnapshot: item.sku.attributes
                 ? (item.sku.attributes as any)
                 : undefined,
@@ -148,10 +153,10 @@ export class OrdersService {
         },
       });
 
-      // Clear cart
-      await tx.cartItem.deleteMany({
-        where: { userId },
-      });
+      // (Tùy chọn) Không xóa giỏ hàng ở đây vì logic mới là giữ lại sản phẩm.
+      // await tx.cartItem.deleteMany({
+      //   where: { userId },
+      // });
 
       return newOrder;
     });

@@ -25,11 +25,13 @@ export class OrdersController {
   @ApiOperation({ summary: 'Create a new order' })
   async createOrder(
     @Body() body: { addressId: number; paymentMethod: string },
-    @Req() req: { user: { userId: number } },
+    @Req() req: { user: { id: number } },
   ) {
-    const userId = req.user.userId;
+    const userId = req.user.id;
     // Log addressId and userId for debugging
-    console.log(`Creating order for userId: ${userId}, addressId: ${body.addressId}`);
+    console.log(
+      `Creating order for userId: ${userId}, addressId: ${body.addressId}`,
+    );
     return this.ordersService.createOrder(
       userId,
       Number(body.addressId),
