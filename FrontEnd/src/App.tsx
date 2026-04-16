@@ -10,6 +10,8 @@ import { CartPage } from './pages/cart/CartPage';
 import { CheckoutPage } from './pages/checkout/CheckoutPage';
 import { VnPayMockPage } from './pages/checkout/VnPayMockPage';
 import { OrderSuccessPage } from './pages/checkout/OrderSuccessPage';
+import { OrderFailedPage } from './pages/checkout/OrderFailedPage';
+import { VnPayReturnPage } from './pages/checkout/VnPayReturnPage';
 import { MainLayout } from './layouts/MainLayout';
 import { AdminLayout } from './layouts/AdminLayout';
 import { AdminProtectedRoute } from './components/layout/AdminProtectedRoute';
@@ -28,9 +30,11 @@ function App() {
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/order/success" element={<OrderSuccessPage />} />
+        <Route path="/order/failed" element={<OrderFailedPage />} />
       </Route>
 
       <Route path="/vnpay-mock" element={<VnPayMockPage />} />
+      <Route path="/vnpay-return" element={<VnPayReturnPage />} />
 
       {/* Auth Routes */}
       <Route path="/login" element={<LoginPage />} />
