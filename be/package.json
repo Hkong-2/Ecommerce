@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@nestjs/axios": "^4.0.1",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
@@ -31,7 +32,7 @@
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "@types/puppeteer": "^5.4.7",
-    "axios": "^1.14.0",
+    "axios": "^1.15.0",
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.4",
@@ -42,6 +43,7 @@
     "passport-jwt": "^4.0.1",
     "pg": "^8.16.3",
     "puppeteer": "^24.40.0",
+    "qs": "^6.15.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "swagger-ui-express": "^5.0.1",
@@ -63,6 +65,7 @@
     "@types/node": "^22.10.7",
     "@types/passport-google-oauth20": "^2.0.17",
     "@types/passport-jwt": "^4.0.1",
+    "@types/qs": "^6.15.0",
     "@types/supertest": "^6.0.2",
     "@types/uuid": "^10.0.0",
     "eslint": "^9.18.0",

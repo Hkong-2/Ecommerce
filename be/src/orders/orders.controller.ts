@@ -1,0 +1,37 @@
+import { Controller, Post, Body, UseGuards, Req } from '@nestjs/common';
+import { OrdersService } from './orders.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+
+@ApiTags('Orders')
+@Controller('orders')
+export class OrdersController {
+  constructor(private readonly ordersService: OrdersService) {}
+
+  @Post('shipping-fee')
+  @ApiOperation({ summary: 'Calculate shipping fee via GHN' })
+  async calculateShippingFee(
+    @Body() body: { districtId: number; wardCode: string },
+  ) {
+    return this.ordersService.calculateShippingFee(
+      body.districtId,
+      body.wardCode,
+    );
+  }
+
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create a new order' })
+  async createOrder(
+    @Body() body: { addressId: number; paymentMethod: string },
+    @Req() req: { user: { id: number } },
+  ) {
+    const userId = req.user.id;
+    return this.ordersService.createOrder(
+      userId,
+      body.addressId,
+      body.paymentMethod,
+    );
+  }
+}

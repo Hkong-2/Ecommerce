@@ -97,7 +97,7 @@ export function CheckoutPage() {
       if (res.paymentUrl) {
          window.location.href = res.paymentUrl; // Redirect to VNPay
       } else {
-         navigate('/order/success');
+         navigate(`/order/success?orderCode=${res.order.orderCode}`);
       }
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Có lỗi xảy ra khi đặt hàng');
