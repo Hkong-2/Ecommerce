@@ -2,9 +2,6 @@ import { Injectable, Logger } from '@nestjs/common';
 import puppeteer, { Browser } from 'puppeteer';
 import { PrismaService } from '../prisma/prisma.service';
 
-import * as path from 'path';
-import { v2 as cloudinary } from 'cloudinary';
-
 export interface Variant {
   attributes: { storage: string; color: string };
   price: number;
@@ -23,13 +20,7 @@ export interface CrawledData {
 export class CrawlerService {
   private readonly logger = new Logger(CrawlerService.name);
 
-  constructor(private prisma: PrismaService) {
-    cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET,
-    });
-  }
+  constructor(private prisma: PrismaService) {}
 
   async crawlCategory(
     categoryUrl: string,
@@ -276,7 +267,7 @@ export class CrawlerService {
 
         try {
           return JSON.parse(dataAttr);
-        } catch (e) {
+        } catch {
           return null;
         }
       });
@@ -409,29 +400,9 @@ export class CrawlerService {
       });
     }
 
-    // 2. Upload Images to Cloudinary
-    const cloudinaryImageUrls: string[] = [];
-
-    for (const url of data.images) {
-      try {
-        const uploadResult = await cloudinary.uploader.upload(url, {
-          folder: 'digipro/products',
-        });
-        if (uploadResult && uploadResult.secure_url) {
-          cloudinaryImageUrls.push(uploadResult.secure_url);
-        }
-      } catch (err) {
-        this.logger.error(
-          `Error uploading image to Cloudinary from ${url}:`,
-          err,
-        );
-        // Fallback: keep the original url if upload fails
-        cloudinaryImageUrls.push(url);
-      }
-    }
-
-    const thumbnailUrl =
-      cloudinaryImageUrls.length > 0 ? cloudinaryImageUrls[0] : null;
+    // 2. Use direct image URLs from crawled data
+    const directImageUrls: string[] = data.images;
+    const thumbnailUrl = directImageUrls.length > 0 ? directImageUrls[0] : null;
 
     // 3. Upsert Product
     const slug = data.productName
@@ -463,8 +434,8 @@ export class CrawlerService {
       where: { productId: product.id },
     });
 
-    if (cloudinaryImageUrls.length > 0) {
-      const imageRecords = cloudinaryImageUrls.map((url) => ({
+    if (directImageUrls.length > 0) {
+      const imageRecords = directImageUrls.map((url) => ({
         productId: product.id,
         imageUrl: url,
         altText: data.productName,
