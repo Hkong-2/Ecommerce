@@ -3,7 +3,7 @@ import puppeteer, { Browser } from 'puppeteer';
 import { PrismaService } from '../prisma/prisma.service';
 
 import * as path from 'path';
-import { downloadImage } from './download.util';
+import { v2 as cloudinary } from 'cloudinary';
 
 export interface Variant {
   attributes: { storage: string; color: string };
@@ -23,7 +23,13 @@ export interface CrawledData {
 export class CrawlerService {
   private readonly logger = new Logger(CrawlerService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+  }
 
   async crawlCategory(
     categoryUrl: string,
@@ -403,18 +409,29 @@ export class CrawlerService {
       });
     }
 
-    // 2. Download Images
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'products');
-    const localImageUrls: string[] = [];
+    // 2. Upload Images to Cloudinary
+    const cloudinaryImageUrls: string[] = [];
 
     for (const url of data.images) {
-      const filename = await downloadImage(url, uploadDir);
-      if (filename) {
-        localImageUrls.push(`/uploads/products/${filename}`);
+      try {
+        const uploadResult = await cloudinary.uploader.upload(url, {
+          folder: 'digipro/products',
+        });
+        if (uploadResult && uploadResult.secure_url) {
+          cloudinaryImageUrls.push(uploadResult.secure_url);
+        }
+      } catch (err) {
+        this.logger.error(
+          `Error uploading image to Cloudinary from ${url}:`,
+          err,
+        );
+        // Fallback: keep the original url if upload fails
+        cloudinaryImageUrls.push(url);
       }
     }
 
-    const thumbnailUrl = localImageUrls.length > 0 ? localImageUrls[0] : null;
+    const thumbnailUrl =
+      cloudinaryImageUrls.length > 0 ? cloudinaryImageUrls[0] : null;
 
     // 3. Upsert Product
     const slug = data.productName
@@ -442,30 +459,12 @@ export class CrawlerService {
     });
 
     // 4. Update Product Images
-    // Remove old images physically and in db before adding new ones
-    const oldImages = await this.prisma.productImage.findMany({
-      where: { productId: product.id },
-    });
-
-    for (const oldImg of oldImages) {
-      if (oldImg.imageUrl.startsWith('/uploads/products/')) {
-        const filePath = path.join(process.cwd(), 'public', oldImg.imageUrl);
-        try {
-          if (require('fs').existsSync(filePath)) {
-            require('fs').unlinkSync(filePath);
-          }
-        } catch (err) {
-          this.logger.error(`Error deleting old image ${filePath}: ${err}`);
-        }
-      }
-    }
-
     await this.prisma.productImage.deleteMany({
       where: { productId: product.id },
     });
 
-    if (localImageUrls.length > 0) {
-      const imageRecords = localImageUrls.map((url) => ({
+    if (cloudinaryImageUrls.length > 0) {
+      const imageRecords = cloudinaryImageUrls.map((url) => ({
         productId: product.id,
         imageUrl: url,
         altText: data.productName,

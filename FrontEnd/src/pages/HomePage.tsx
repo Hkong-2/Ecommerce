@@ -15,7 +15,7 @@ import { ProductFilter } from '../components/ui/ProductFilter';
 export const HomePage: React.FC = () => {
   const { user, isAuthenticated, isLoading: isAuthLoading } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const { t } = useTranslation();
   const [products, setProducts] = useState<HomepageProduct[]>([]);
   const [isProductsLoading, setIsProductsLoading] = useState(true);
