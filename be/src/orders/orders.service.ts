@@ -135,9 +135,9 @@ export class OrdersService {
               skuId: item.skuId,
               quantity: item.quantity,
               productNameSnapshot: item.sku.product.name,
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
               skuAttributesSnapshot: item.sku.attributes
-                ? (item.sku.attributes as any)
+                ? item.sku.attributes
                 : undefined,
               unitPrice: item.sku.price,
               finalPrice: item.sku.price,
