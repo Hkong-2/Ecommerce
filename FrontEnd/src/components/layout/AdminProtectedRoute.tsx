@@ -1,9 +1,21 @@
-import { Navigate, Outlet } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../stores/store';
+import { logout } from '../../stores/authSlice';
+import { isJwtExpired } from '../../utils/jwt';
+import { useEffect } from 'react';
 
 export const AdminProtectedRoute = () => {
-  const { isAuthenticated, user, isLoading } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, token, user, isLoading } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const hasExpiredToken = !!token && isJwtExpired(token);
+
+  useEffect(() => {
+    if (hasExpiredToken) {
+      dispatch(logout());
+    }
+  }, [dispatch, hasExpiredToken]);
 
   if (isLoading) {
     return (
@@ -13,12 +25,14 @@ export const AdminProtectedRoute = () => {
     );
   }
 
-  // If not authenticated, redirect to login
-  if (!isAuthenticated) {
-    return <Navigate to="/admin/login" replace />;
+  if (!isAuthenticated || !token) {
+    return <Navigate to="/admin/login" replace state={{ from: location }} />;
   }
 
-  // If authenticated but not an admin, redirect to user home
+  if (hasExpiredToken) {
+    return <Navigate to="/admin/login" replace state={{ from: location }} />;
+  }
+
   if (user && user.role !== 'ADMIN') {
     return <Navigate to="/" replace />;
   }

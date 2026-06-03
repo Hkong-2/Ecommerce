@@ -19,7 +19,7 @@ export function AdminLayout() {
       <aside className="w-64 bg-white border-r border-gray-200 flex flex-col hidden md:flex">
         <div className="p-6 border-b border-gray-200 flex items-center justify-center">
           <Link to="/admin/dashboard" className="text-2xl font-black tracking-tighter text-indigo-600 uppercase">
-            Shoora Admin
+            DigiPro Admin
           </Link>
         </div>
 
@@ -59,7 +59,7 @@ export function AdminLayout() {
         {/* Mobile Header (placeholder for now) */}
         <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 md:hidden">
             <Link to="/admin/dashboard" className="text-xl font-bold text-indigo-600">
-              Shoora Admin
+              DigiPro Admin
             </Link>
             <button onClick={handleLogout} className="p-2 text-gray-600">
               <SignOut className="w-6 h-6" />

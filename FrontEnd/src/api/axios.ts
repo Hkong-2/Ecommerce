@@ -32,13 +32,12 @@ api.interceptors.response.use(
       // For instance, the initial getProfile check will return 401 if not logged in.
       store.dispatch(logout());
 
-      // If the error happens on the login or admin login route, don't redirect
       const isAuthRoute = window.location.pathname.includes('/login');
-      // Also ignore explicit profile/me checks that shouldn't force a hard redirect
       const isCheckingProfile = error.config?.url?.includes('/auth/profile') || error.config?.url?.includes('/users/me');
 
       if (!isAuthRoute && !isCheckingProfile) {
-         window.location.href = '/login';
+        const loginPath = window.location.pathname.startsWith('/admin') ? '/admin/login' : '/login';
+        window.location.href = loginPath;
       }
     }
     return Promise.reject(error);

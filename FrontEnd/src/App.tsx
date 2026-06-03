@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { LoginPage } from './pages/LoginPage';
 import { AdminLoginPage } from './pages/AdminLoginPage';
 import { HomePage } from './pages/HomePage';
@@ -42,6 +42,7 @@ function App() {
 
       {/* Admin Protected Routes */}
       <Route element={<AdminProtectedRoute />}>
+        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
           {/* Add more admin routes here like /admin/products, etc */}

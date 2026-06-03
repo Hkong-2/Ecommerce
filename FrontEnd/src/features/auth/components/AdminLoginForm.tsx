@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setToken, setUser, setLoading } from '../../../stores/authSlice';
 import { authApi } from '../../../api/auth';
@@ -11,7 +11,9 @@ export const AdminLoginForm: React.FC = () => {
   const [error, setError] = useState('');
 
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
+  const from = (location.state as { from?: { pathname?: string; search?: string } } | null)?.from;
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,8 +29,8 @@ export const AdminLoginForm: React.FC = () => {
       const user = await authApi.getProfile();
       dispatch(setUser(user));
 
-      // Redirect to admin dashboard
-      navigate('/admin/dashboard', { replace: true });
+      const redirectPath = `${from?.pathname || '/admin/dashboard'}${from?.search || ''}`;
+      navigate(redirectPath, { replace: true });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error('Failed to login as admin', err);
