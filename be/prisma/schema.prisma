@@ -44,6 +44,9 @@ model Address {
   ward          String // Phường/Xã
   district      String // Quận/Huyện
   city          String // Tỉnh/Thành phố
+  provinceId    Int? // Mã tỉnh/thành GHN
+  districtId    Int? // Mã quận/huyện GHN
+  wardCode      String? // Mã phường/xã GHN
   isDefault     Boolean @default(false)
 
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)

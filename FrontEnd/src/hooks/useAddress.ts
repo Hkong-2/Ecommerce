@@ -8,6 +8,9 @@ export interface CreateAddressData {
   ward: string;
   district: string;
   city: string;
+  provinceId?: number | null;
+  districtId?: number | null;
+  wardCode?: string | null;
   isDefault?: boolean;
 }
 
