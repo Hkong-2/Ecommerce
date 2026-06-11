@@ -16,6 +16,7 @@ import { MainLayout } from './layouts/MainLayout';
 import { AdminLayout } from './layouts/AdminLayout';
 import { AdminProtectedRoute } from './components/layout/AdminProtectedRoute';
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage';
+import { AdminProfilePage } from './pages/admin/AdminProfilePage';
 
 function App() {
   return (
@@ -45,6 +46,7 @@ function App() {
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route element={<AdminLayout />}>
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+          <Route path="/admin/profile" element={<AdminProfilePage />} />
           {/* Add more admin routes here like /admin/products, etc */}
         </Route>
       </Route>

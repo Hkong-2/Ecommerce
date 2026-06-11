@@ -8,7 +8,7 @@ import type { HomepageProduct } from '../api/products';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { getFullImageUrl } from '../utils/image';
-import { Loader2, Smartphone, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, Smartphone } from 'lucide-react';
 import heroPhone from '../assets/hero-phone.png';
 import { ProductFilter } from '../components/ui/ProductFilter';
 
@@ -18,6 +18,9 @@ export const HomePage: React.FC = () => {
 
   const { t } = useTranslation();
   const [products, setProducts] = useState<HomepageProduct[]>([]);
+  const [heroProducts, setHeroProducts] = useState<HomepageProduct[]>([]);
+  const [activeHeroIndex, setActiveHeroIndex] = useState(0);
+  const [isHeroPaused, setIsHeroPaused] = useState(false);
   const [isProductsLoading, setIsProductsLoading] = useState(true);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [productsError, setProductsError] = useState<string | null>(null);
@@ -75,6 +78,11 @@ export const HomePage: React.FC = () => {
       } else {
         setProducts(response.data);
         setPage(1);
+
+        const hasActiveFilters = Boolean(filters.minPrice || filters.maxPrice || filters.sortBy);
+        if (!hasActiveFilters) {
+          setHeroProducts(response.data.filter((product) => product.thumbnailUrl).slice(0, 6));
+        }
       }
 
       setHasMore(response.hasMore);
@@ -92,10 +100,38 @@ export const HomePage: React.FC = () => {
     fetchProducts(false);
   }, [filters]);
 
+  useEffect(() => {
+    if (heroProducts.length < 2 || isHeroPaused) return;
+
+    const intervalId = window.setInterval(() => {
+      setActiveHeroIndex((currentIndex) => (currentIndex + 1) % heroProducts.length);
+    }, 4500);
+
+    return () => window.clearInterval(intervalId);
+  }, [heroProducts.length, isHeroPaused]);
+
+  useEffect(() => {
+    if (activeHeroIndex >= heroProducts.length) {
+      setActiveHeroIndex(0);
+    }
+  }, [activeHeroIndex, heroProducts.length]);
+
   const loadMore = () => {
      if (isFetchingMore || !hasMore) return;
      fetchProducts(true);
   };
+
+  const showPreviousHeroProduct = () => {
+    setActiveHeroIndex((currentIndex) =>
+      currentIndex === 0 ? heroProducts.length - 1 : currentIndex - 1
+    );
+  };
+
+  const showNextHeroProduct = () => {
+    setActiveHeroIndex((currentIndex) => (currentIndex + 1) % heroProducts.length);
+  };
+
+  const activeHeroProduct = heroProducts[activeHeroIndex];
 
   if (isAuthLoading) {
     return (
@@ -240,9 +276,7 @@ export const HomePage: React.FC = () => {
          
          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center relative z-10">
             <div className="space-y-8 text-center md:text-left pt-10">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-md text-white rounded-full border border-white/20 text-sm font-semibold shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
-                <ShieldCheck className="w-4 h-4 text-cyan-400" /> Cam kết chính hãng 100%
-              </div>
+              
               <h2 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.1] drop-shadow-md">
                 {t('home.hero.title1')} <br className="hidden md:block"/>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 drop-shadow-sm">{t('home.hero.title2')}</span>
@@ -260,26 +294,104 @@ export const HomePage: React.FC = () => {
               </div>
             </div>
             
-            <div className="mt-10 md:mt-0 flex justify-center items-center relative">
+            <div
+              className="mt-10 md:mt-0 flex justify-center items-center relative"
+              onMouseEnter={() => setIsHeroPaused(true)}
+              onMouseLeave={() => setIsHeroPaused(false)}
+            >
                {/* 3D Image & Glassmorphism Orbiting Cards */}
                <div className="relative w-full max-w-lg aspect-square flex items-center justify-center">
                   {/* Glowing backdrop behind the phone */}
                   <div className="absolute inset-10 bg-gradient-to-tr from-cyan-400/30 to-purple-500/30 rounded-full blur-3xl"></div>
                   
-                  <img src={heroPhone} alt="Premium Smartphone" className="w-[85%] h-[85%] object-contain z-20 animate-float drop-shadow-[0_20px_40px_rgba(0,0,0,0.4)]" />
-                  
-                  {/* Floating Glass Cards */}
-                  <div className="absolute top-[15%] right-[5%] z-30 px-5 py-3 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl animate-float-reverse flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs shadow-inner">
-                      5G
-                    </div>
-                    <span className="text-sm font-bold text-white shadow-sm">Siêu tốc độ</span>
+                  <div className="absolute inset-0 z-20">
+                    {heroProducts.length > 0 ? (
+                      heroProducts.map((product, index) => (
+                        <Link
+                          key={product.id}
+                          to={`/product/${product.slug}`}
+                          aria-label={`Xem ${product.name}`}
+                          className={`absolute inset-0 flex items-center justify-center transition-all duration-700 ease-in-out ${
+                            index === activeHeroIndex
+                              ? 'opacity-100 translate-x-0 scale-100 pointer-events-auto'
+                              : 'opacity-0 translate-x-10 scale-95 pointer-events-none'
+                          }`}
+                        >
+                          <img
+                            src={getFullImageUrl(product.thumbnailUrl)}
+                            alt={product.name}
+                            className="w-[82%] h-[82%] object-contain animate-float drop-shadow-[0_20px_40px_rgba(0,0,0,0.45)]"
+                          />
+                        </Link>
+                      ))
+                    ) : (
+                      <img
+                        src={heroPhone}
+                        alt="Premium Smartphone"
+                        className="w-[85%] h-[85%] object-contain mx-auto animate-float drop-shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
+                      />
+                    )}
                   </div>
-                  
-                  <div className="absolute bottom-[20%] left-[0%] z-30 px-5 py-3 bg-white/10 backdrop-blur-xl rounded-2xl border border-white/20 shadow-2xl animate-float flex flex-col items-start gap-1" style={{ animationDelay: '1.5s' }}>
-                    <span className="text-xs text-cyan-300 font-semibold uppercase tracking-wider">Phiên bản</span>
-                    <span className="text-lg font-black text-white">Pro Max</span>
-                  </div>
+
+                  {activeHeroProduct && (
+                    <Link
+                      to={`/product/${activeHeroProduct.slug}`}
+                      className="absolute bottom-[5%] left-1/2 z-30 w-[76%] -translate-x-1/2 rounded-2xl border border-white/20 bg-slate-950/50 px-5 py-3 text-left shadow-2xl backdrop-blur-xl transition-colors hover:bg-slate-950/70"
+                    >
+                      <span className="mb-1 block text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
+                        {activeHeroProduct.brandName}
+                      </span>
+                      <span className="block truncate text-base font-black text-white sm:text-lg">
+                        {activeHeroProduct.name}
+                      </span>
+                      <span className="mt-1 block text-sm font-semibold text-slate-200">
+                        {activeHeroProduct.lowestPrice
+                          ? `Từ ${new Intl.NumberFormat('vi-VN', {
+                              style: 'currency',
+                              currency: 'VND',
+                            }).format(activeHeroProduct.lowestPrice)}`
+                          : 'Liên hệ'}
+                      </span>
+                    </Link>
+                  )}
+
+                  {heroProducts.length > 1 && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={showPreviousHeroProduct}
+                        aria-label="Điện thoại trước"
+                        className="absolute left-0 top-1/2 z-40 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-all hover:scale-110 hover:bg-white/20"
+                      >
+                        <ChevronLeft className="h-6 w-6" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={showNextHeroProduct}
+                        aria-label="Điện thoại tiếp theo"
+                        className="absolute right-0 top-1/2 z-40 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white backdrop-blur-md transition-all hover:scale-110 hover:bg-white/20"
+                      >
+                        <ChevronRight className="h-6 w-6" />
+                      </button>
+
+                      <div className="absolute -bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2">
+                        {heroProducts.map((product, index) => (
+                          <button
+                            key={product.id}
+                            type="button"
+                            onClick={() => setActiveHeroIndex(index)}
+                            aria-label={`Hiển thị ${product.name}`}
+                            aria-current={index === activeHeroIndex ? 'true' : undefined}
+                            className={`h-2.5 rounded-full transition-all ${
+                              index === activeHeroIndex
+                                ? 'w-8 bg-cyan-400'
+                                : 'w-2.5 bg-white/40 hover:bg-white/70'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </>
+                  )}
                </div>
             </div>
          </div>

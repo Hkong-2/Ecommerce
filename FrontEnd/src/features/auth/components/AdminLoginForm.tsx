@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { setToken, setUser, setLoading } from '../../../stores/authSlice';
 import { authApi } from '../../../api/auth';
 import { EnvelopeSimple, LockKey } from '@phosphor-icons/react';
+import { PasswordInput } from '../../../components/ui/password-input';
 
 export const AdminLoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -60,7 +61,7 @@ export const AdminLoginForm: React.FC = () => {
 
         <div className="space-y-4">
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <div className="absolute inset-y-0 left-0 z-10 pl-4 flex items-center pointer-events-none">
               <EnvelopeSimple className="h-5 w-5 text-zinc-400" />
             </div>
             <input
@@ -74,16 +75,16 @@ export const AdminLoginForm: React.FC = () => {
           </div>
 
           <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <div className="absolute inset-y-0 left-0 z-10 pl-4 flex items-center pointer-events-none">
               <LockKey className="h-5 w-5 text-zinc-400" />
             </div>
-            <input
-              type="password"
+            <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
+              autoComplete="current-password"
               required
-              className="block w-full pl-11 pr-4 py-3 rounded-xl border border-zinc-200 bg-zinc-50 text-zinc-900 placeholder-zinc-400 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/20 outline-none transition-all duration-300"
+              className="block h-auto w-full rounded-xl border border-zinc-200 bg-zinc-50 py-3 pl-11 pr-11 text-zinc-900 placeholder-zinc-400 outline-none transition-all duration-300 focus:border-indigo-500 focus:bg-white focus:ring-4 focus:ring-indigo-500/20"
             />
           </div>
         </div>

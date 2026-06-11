@@ -20,7 +20,7 @@ export interface UserProfile {
   email: string;
   fullName: string;
   phone: string | null;
-  role: string;
+  role: 'ADMIN' | 'USER';
   createdAt: string;
   updatedAt: string;
   addresses: Address[];
@@ -48,6 +48,11 @@ export interface UpdateProfileData {
   phone?: string;
 }
 
+export interface ChangePasswordData {
+  currentPassword: string;
+  newPassword: string;
+}
+
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
 
@@ -59,6 +64,15 @@ export const useUpdateProfile = () => {
     onSuccess: () => {
       // Invalidate and refetch
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+    },
+  });
+};
+
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: async (data: ChangePasswordData) => {
+      const response = await api.patch('/users/me/password', data);
+      return response.data as { message: string };
     },
   });
 };

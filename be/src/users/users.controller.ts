@@ -1,6 +1,16 @@
-import { Controller, Get, Body, Patch, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Patch,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+  Req,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import {
   ApiTags,
   ApiBearerAuth,
@@ -31,5 +41,19 @@ export class UsersController {
   })
   updateProfile(@Req() req, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(req.user.userId, updateUserDto);
+  }
+
+  @Patch('me/password')
+  @UsePipes(new ValidationPipe({ whitelist: true, transform: true }))
+  @ApiOperation({ summary: 'Change current user password' })
+  @ApiResponse({
+    status: 200,
+    description: 'The password has been successfully changed.',
+  })
+  changePassword(@Req() req, @Body() changePasswordDto: ChangePasswordDto) {
+    return this.usersService.changePassword(
+      req.user.userId,
+      changePasswordDto,
+    );
   }
 }

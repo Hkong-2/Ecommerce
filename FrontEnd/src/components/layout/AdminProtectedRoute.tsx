@@ -25,16 +25,14 @@ export const AdminProtectedRoute = () => {
     );
   }
 
-  if (!isAuthenticated || !token) {
-    return <Navigate to="/admin/login" replace state={{ from: location }} />;
-  }
+  const hasValidAdminSession =
+    isAuthenticated &&
+    Boolean(token) &&
+    !hasExpiredToken &&
+    user?.role === 'ADMIN';
 
-  if (hasExpiredToken) {
+  if (!hasValidAdminSession) {
     return <Navigate to="/admin/login" replace state={{ from: location }} />;
-  }
-
-  if (user && user.role !== 'ADMIN') {
-    return <Navigate to="/" replace />;
   }
 
   return <Outlet />;
