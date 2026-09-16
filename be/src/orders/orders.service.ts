@@ -118,8 +118,29 @@ export class OrdersService {
     // 4. Generate Order Code
     const orderCode = `ORD-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    // 5. Create Order in Transaction
+    // 5. Create Order and Decrease Stock in Transaction
     const order = await this.prisma.$transaction(async (tx) => {
+      // 5.1 Trừ số lượng tồn kho (Inventory decrement)
+      for (const item of cartItems) {
+        const updatedSku = await tx.sKU.updateMany({
+          where: {
+            id: item.skuId,
+            stock: { gte: item.quantity }, // Đảm bảo số lượng tồn kho >= số lượng khách mua
+          },
+          data: {
+            stock: { decrement: item.quantity },
+          },
+        });
+
+        // Nếu update.count = 0, tức là không có record nào thỏa mãn điều kiện tồn kho >= quantity
+        if (updatedSku.count === 0) {
+          throw new BadRequestException(
+            `Sản phẩm ${item.sku.product.name} (SKU: ${item.sku.skuCode}) đã hết hàng hoặc không đủ số lượng (Yêu cầu: ${item.quantity}).`,
+          );
+        }
+      }
+
+      // 5.2 Tạo Order
       const newOrder = await tx.order.create({
         data: {
           userId,
@@ -153,10 +174,10 @@ export class OrdersService {
         },
       });
 
-      // (Tùy chọn) Không xóa giỏ hàng ở đây vì logic mới là giữ lại sản phẩm.
-      // await tx.cartItem.deleteMany({
-      //   where: { userId },
-      // });
+      // Xóa giỏ hàng sau khi đặt thành công
+      await tx.cartItem.deleteMany({
+        where: { userId },
+      });
 
       return newOrder;
     });
