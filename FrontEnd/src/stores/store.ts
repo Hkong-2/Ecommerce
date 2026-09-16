@@ -9,7 +9,7 @@ import {
   PURGE,
   REGISTER,
 } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
+import storageSession from 'redux-persist/lib/storage/session';
 import uiReducer from './uiSlice';
 import authReducer from './authSlice';
 import cartReducer from './cartSlice';
@@ -23,8 +23,8 @@ const rootReducer = combineReducers({
 const persistConfig = {
   key: 'root',
   version: 1,
-  storage,
-  whitelist: ['auth'], // Only persist the auth slice
+  storage: storageSession,
+  whitelist: ['auth'],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
