@@ -15,6 +15,8 @@ import { OrdersModule } from './orders/orders.module';
 import { PaymentModule } from './payment/payment.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 
+import { RedisModule } from './redis/redis.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -24,6 +26,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
       rootPath: join(__dirname, '..', '..', 'public'), // Fix for dist/src/app.module.js -> ../../public
       serveRoot: '/', // Optional, default is '/'
     }),
+    RedisModule,
     PrismaModule,
     AuthModule,
     UsersModule,

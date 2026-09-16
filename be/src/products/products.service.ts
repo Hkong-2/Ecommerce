@@ -1,11 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redisService: RedisService,
+  ) {}
 
   async getHomepageProducts(page: number = 1, limit: number = 6) {
+    const cacheKey = `homepage_products_p${page}_l${limit}`;
+    const cachedData = await this.redisService.get(cacheKey);
+    if (cachedData) {
+      return cachedData;
+    }
+
     try {
       // Get all active products with their lowest price and brand
       const products = await this.prisma.product.findMany({
@@ -80,11 +90,15 @@ export class ProductsService {
 
       const paginatedData = interleavedProducts.slice(startIndex, endIndex);
 
-      return {
+      const result = {
         data: paginatedData,
         total: total,
         hasMore: endIndex < total,
       };
+
+      // Cache for 5 minutes (300 seconds)
+      await this.redisService.set(cacheKey, result, 300);
+      return result;
     } catch (e) {
       console.error(e);
       // fallback to mock data to prevent crash if database is unavailable
@@ -262,6 +276,12 @@ export class ProductsService {
   }
 
   async getProductBySlug(slug: string) {
+    const cacheKey = `product_slug_${slug}`;
+    const cachedProduct = await this.redisService.get(cacheKey);
+    if (cachedProduct) {
+      return cachedProduct;
+    }
+
     const product = await this.prisma.product.findUnique({
       where: {
         slug: slug,
@@ -282,6 +302,9 @@ export class ProductsService {
     if (!product) {
       throw new NotFoundException('Product not found');
     }
+
+    // Cache for 15 minutes (900 seconds)
+    await this.redisService.set(cacheKey, product, 900);
 
     return product;
   }

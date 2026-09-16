@@ -4,6 +4,7 @@ import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { PaymentService } from '../payment/payment.service';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class OrdersService {
@@ -12,6 +13,7 @@ export class OrdersService {
     private readonly httpService: HttpService,
     private readonly prisma: PrismaService,
     private readonly paymentService: PaymentService,
+    private readonly redisService: RedisService,
   ) {}
 
   async calculateShippingFee(districtId: number, wardCode: string) {
@@ -63,7 +65,14 @@ export class OrdersService {
   }
 
   async createOrder(userId: number, addressId: number, paymentMethod: string) {
-    // 1. Get user's cart
+    const lockKey = `checkout_lock_user_${userId}`;
+    const acquired = await this.redisService.acquireLock(lockKey, 5); // Lock 5s
+    if (!acquired) {
+      throw new BadRequestException('Hệ thống đang xử lý đơn hàng của bạn, vui lòng thử lại sau giây lát!');
+    }
+
+    try {
+      // 1. Get user's cart
     const cartItems = await this.prisma.cartItem.findMany({
       where: { userId },
       include: {
@@ -183,14 +192,17 @@ export class OrdersService {
     });
 
     // 6. Handle Payment Method
-    if (paymentMethod === 'VNPAY') {
-      const paymentUrl = this.paymentService.createPaymentUrl(
-        order,
-        '127.0.0.1',
-      );
-      return { order, paymentUrl };
-    }
+      if (paymentMethod === 'VNPAY') {
+        const paymentUrl = this.paymentService.createPaymentUrl(
+          order,
+          '127.0.0.1',
+        );
+        return { order, paymentUrl };
+      }
 
-    return { order, paymentUrl: null };
+      return { order, paymentUrl: null };
+    } finally {
+      await this.redisService.releaseLock(lockKey);
+    }
   }
 }
