@@ -72,12 +72,12 @@ export class PaymentService {
     const rspCode = vnp_Params['vnp_ResponseCode'];
 
     if (secureHash === signed) {
-      // Payment successful
       if (rspCode === '00') {
-        // Update order status to PAID
+        // Payment successful
         await this.prisma.order.update({
           where: { orderCode: orderCode },
           data: {
+            status: 'PROCESSING',
             paymentStatus: 'PAID',
             statusHistory: {
               create: {
@@ -93,18 +93,40 @@ export class PaymentService {
           transactionNo: vnp_Params['vnp_TransactionNo'],
         };
       } else {
-        // Payment failed
-        await this.prisma.order.update({
-          where: { orderCode: orderCode },
-          data: {
-            paymentStatus: 'FAILED',
-            statusHistory: {
-              create: {
+        // Payment failed - Hủy đơn và hoàn lại tồn kho
+        await this.prisma.$transaction(async (tx) => {
+          const failedOrder = await tx.order.findUnique({
+            where: { orderCode: orderCode },
+            include: { items: true },
+          });
+
+          // Tránh cộng dồn tồn kho nếu webhook hoặc return url gọi nhiều lần
+          if (failedOrder && failedOrder.status !== 'CANCELLED') {
+            // Hoàn lại số lượng tồn kho
+            for (const item of failedOrder.items) {
+              if (item.skuId) {
+                await tx.sKU.update({
+                  where: { id: item.skuId },
+                  data: { stock: { increment: item.quantity } },
+                });
+              }
+            }
+
+            // Cập nhật trạng thái đơn hàng
+            await tx.order.update({
+              where: { orderCode: orderCode },
+              data: {
                 status: 'CANCELLED',
-                note: 'Giao dịch thanh toán VNPay thất bại hoặc bị hủy.',
+                paymentStatus: 'FAILED',
+                statusHistory: {
+                  create: {
+                    status: 'CANCELLED',
+                    note: 'Giao dịch thanh toán VNPay thất bại hoặc bị hủy. Hoàn lại tồn kho.',
+                  },
+                },
               },
-            },
-          },
+            });
+          }
         });
         return { isSuccess: false, orderCode };
       }
