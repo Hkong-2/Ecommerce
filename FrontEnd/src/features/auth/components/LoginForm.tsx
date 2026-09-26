@@ -10,7 +10,8 @@ export const LoginForm: React.FC = () => {
     const redirectUrl = urlParams.get('redirect');
 
     // Redirect to the backend Google Auth endpoint
-    let googleAuthUrl = 'http://localhost:3000/auth/google';
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    let googleAuthUrl = `${apiUrl}/auth/google`;
     if (redirectUrl) {
         googleAuthUrl += `?state=${encodeURIComponent(redirectUrl)}`;
     }
