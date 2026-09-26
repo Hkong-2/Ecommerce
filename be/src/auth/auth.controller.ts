@@ -43,7 +43,8 @@ export class AuthController {
 
     // Lấy state từ query param (nếu có, ví dụ do frontend truyền lên để redirect lại)
     const state = req.query.state as string;
-    let redirectUrl = `http://localhost:5173/login?token=${loginResult.access_token}`;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    let redirectUrl = `${frontendUrl}/login?token=${loginResult.access_token}`;
 
     if (state) {
       redirectUrl += `&redirect=${encodeURIComponent(state)}`;
