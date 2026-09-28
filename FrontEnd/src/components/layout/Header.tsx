@@ -79,7 +79,7 @@ export function Header() {
   };
 
   return (
-    <header className="bg-white border-b sticky top-0 z-50 shadow-sm">
+    <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50 shadow-lg">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         {/* Logo & Categories */}
         <div className="flex items-center gap-6">
@@ -89,7 +89,7 @@ export function Header() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="font-semibold text-slate-700 hover:bg-slate-100 hidden md:flex items-center gap-1">
+              <Button variant="ghost" className="font-semibold text-slate-200 hover:bg-slate-800 hover:text-white hidden md:flex items-center gap-1">
                 Danh mục
                 <CaretDownIcon className="w-4 h-4" />
               </Button>
@@ -121,9 +121,9 @@ export function Header() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t('search_placeholder')}
-            className="w-full px-4 py-2 border rounded-full bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-sm transition-all"
+            className="w-full px-4 py-2 border rounded-full bg-slate-800 border-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-slate-900 text-white placeholder-slate-400 text-sm transition-all"
           />
-          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+          <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
@@ -135,7 +135,7 @@ export function Header() {
           {/* Language Toggle */}
           <button
             onClick={toggleLanguage}
-            className="text-sm font-semibold px-2 py-1 rounded hover:bg-slate-100 text-slate-700 transition-colors"
+            className="text-sm font-semibold px-2 py-1 rounded hover:bg-slate-800 text-slate-200 transition-colors"
           >
             {i18n.language === 'en' ? 'VI' : 'EN'}
           </button>
@@ -143,9 +143,9 @@ export function Header() {
           {/* Cart Placeholder */}
           <button
             onClick={() => dispatch(toggleCartDrawer())}
-            className="p-2 hover:bg-slate-100 rounded-full relative transition-colors"
+            className="p-2 hover:bg-slate-800 rounded-full relative transition-colors"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
             {cartItemCount > 0 && (
