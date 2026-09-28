@@ -5,15 +5,16 @@ import { LoginForm } from '../features/auth/components/LoginForm';
 import { useDispatch } from 'react-redux';
 import { setToken, setUser, setLoading, logout } from '../stores/authSlice';
 import { authApi } from '../api/auth';
+import { CircleNotch } from '@phosphor-icons/react';
 
 export const LoginPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    const token = searchParams.get('token');
+  const token = searchParams.get('token');
 
+  useEffect(() => {
     const initializeAuth = async (token: string) => {
       dispatch(setLoading(true));
       try {
@@ -39,7 +40,20 @@ export const LoginPage: React.FC = () => {
     if (token) {
       initializeAuth(token);
     }
-  }, [searchParams, navigate, dispatch]);
+  }, [searchParams, navigate, dispatch, token]);
+
+  if (token) {
+    return (
+      <AuthLayout>
+        <div className="flex flex-col items-center justify-center space-y-4 py-16">
+          <CircleNotch weight="bold" className="h-10 w-10 text-blue-500 animate-spin" />
+          <p className="text-slate-500 font-medium animate-pulse">
+            Đang xác thực đăng nhập...
+          </p>
+        </div>
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout>
@@ -47,3 +61,4 @@ export const LoginPage: React.FC = () => {
     </AuthLayout>
   );
 };
+
