@@ -91,11 +91,16 @@ export function SearchPage() {
         </h1>
         <p className="text-slate-500 mb-4">Tìm thấy {total} sản phẩm</p>
 
-        <ProductFilter onFilterChange={setFilters} initialFilters={filters} />
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          {/* Sidebar Filter */}
+          <div className="w-full lg:w-72 shrink-0">
+            <ProductFilter onFilterChange={setFilters} initialFilters={filters} />
+          </div>
 
-        {/* Product Grid */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {/* Product Grid */}
+          <div className="flex-1 w-full">
+            {isLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {renderSkeletons(8)}
           </div>
         ) : products.length === 0 ? (
@@ -105,7 +110,7 @@ export function SearchPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {products.map((product) => (
                 <Link to={`/product/${product.slug}`} key={product.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 relative">
                   <div className="aspect-square bg-white relative p-6 flex items-center justify-center">
@@ -157,6 +162,8 @@ export function SearchPage() {
             )}
           </>
         )}
+          </div>
+        </div>
       </div>
     </div>
   );
