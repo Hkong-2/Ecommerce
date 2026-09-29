@@ -118,9 +118,16 @@ export function BrandPage() {
           </div>
         </div>
 
-        {/* Product Grid */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="flex flex-col lg:flex-row gap-8 items-start">
+          {/* Sidebar Filter */}
+          <div className="w-full lg:w-72 shrink-0">
+            <ProductFilter onFilterChange={setFilters} initialFilters={filters} />
+          </div>
+
+          {/* Product Grid */}
+          <div className="flex-1 w-full">
+            {isLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {renderSkeletons(8)}
           </div>
         ) : products.length === 0 ? (
@@ -130,7 +137,7 @@ export function BrandPage() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {products.map((product) => (
                 <Link to={`/product/${product.slug}`} key={product.id} className="bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col overflow-hidden group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 relative">
                   <div className="aspect-square bg-white relative p-6 flex items-center justify-center">
@@ -182,6 +189,8 @@ export function BrandPage() {
             )}
           </>
         )}
+          </div>
+        </div>
       </div>
     </div>
   );
